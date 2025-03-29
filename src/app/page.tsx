@@ -119,21 +119,48 @@ export default function Home() {
         // Using GitHub API to fetch the latest commit
         const response = await fetch('https://api.github.com/users/awesamarth/events/public');
         const data = await response.json();
-
-        // Find the first push event
-        const pushEvent = data.find((event: { type: string; }) => event.type === 'PushEvent');
-
-        if (pushEvent) {
-          const commit = pushEvent.payload.commits[0];
-          const repoName = pushEvent.repo.name.split('/')[1];
-          const repoFullName = pushEvent.repo.name;
-
-          setLatestCommit({
-            repo: repoName,
-            message: commit.message,
-            date: new Date(pushEvent.created_at).toLocaleDateString(),
-            url: `https://github.com/${repoFullName}/commit/${commit.sha}`
-          });
+    
+        // Define more specific type for GitHub events
+        type GithubEvent = {
+          type: string;
+          payload: any;
+          repo: {
+            name: string;
+          };
+          created_at: string;
+        };
+    
+        // Find the first push event or create event
+        const relevantEvent = data.find((event: GithubEvent) => 
+          event.type === 'PushEvent' || 
+          (event.type === 'CreateEvent' && event.payload.ref_type === 'repository')
+        );
+    
+        if (relevantEvent) {
+          if (relevantEvent.type === 'PushEvent') {
+            // Handle Push Event
+            const commit = relevantEvent.payload.commits[0];
+            const repoName = relevantEvent.repo.name.split('/')[1];
+            const repoFullName = relevantEvent.repo.name;
+    
+            setLatestCommit({
+              repo: repoName,
+              message: commit.message,
+              date: new Date(relevantEvent.created_at).toLocaleDateString(),
+              url: `https://github.com/${repoFullName}/commit/${commit.sha}`
+            });
+          } else if (relevantEvent.type === 'CreateEvent') {
+            // Handle Create Event
+            const repoName = relevantEvent.repo.name.split('/')[1];
+            const repoFullName = relevantEvent.repo.name;
+    
+            setLatestCommit({
+              repo: repoName,
+              message: `Created new repository`,
+              date: new Date(relevantEvent.created_at).toLocaleDateString(),
+              url: `https://github.com/${repoFullName}`
+            });
+          }
         }
       } catch (error) {
         console.error('Error fetching GitHub data:', error);
@@ -182,7 +209,7 @@ export default function Home() {
           {/* Hero Section */}
           <div className="flex flex-col-reverse md:flex-row items-center justify-between pt-24 pb-2 gap-8">
             <div>
-              <h1 className="text-4xl font-bold mb-3 pb-3 border-b-2">
+              <h1 className="text-4xl font-bold mb-4 pb-3 border-b-2">
                 Hey, I'm Samarth!
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl mb-4">
