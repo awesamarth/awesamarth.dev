@@ -16,11 +16,12 @@ export default function Home() {
     url: string; // Added URL field for the repo link
   };
 
-  // Twitter API response types (simplified)
-  type Tweet = {
+  type Cast = {
     text: string;
-    created_at: string;
+    timestamp: number;
+    url: string;
   };
+
 
   type Repository = {
     name: string;
@@ -32,7 +33,7 @@ export default function Home() {
   };
 
   const [latestCommit, setLatestCommit] = useState<GithubCommit | null>(null);
-  const [latestTweet, setLatestTweet] = useState<Tweet | null>(null);
+  const [latestCast, setLatestCast] = useState<Cast | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [repositories, setRepositories] = useState<Repository[]>([]);
 
@@ -112,6 +113,14 @@ export default function Home() {
     }
   }
 
+  function formatFarcasterTimestamp(timestamp: number): string {
+    // Farcaster timestamps count seconds from Jan 1, 2021 00:00:00 UTC
+    const farcasterEpochStart = new Date('2021-01-01T00:00:00Z').getTime();
+    const date = new Date(farcasterEpochStart + (timestamp * 1000));
+    return date.toLocaleDateString();
+  }
+
+
 
   useEffect(() => {
     async function fetchGithubCommit() {
@@ -119,7 +128,7 @@ export default function Home() {
         // Using GitHub API to fetch the latest commit
         const response = await fetch('https://api.github.com/users/awesamarth/events/public');
         const data = await response.json();
-    
+
         // Define more specific type for GitHub events
         type GithubEvent = {
           type: string;
@@ -129,20 +138,20 @@ export default function Home() {
           };
           created_at: string;
         };
-    
+
         // Find the first push event or create event
-        const relevantEvent = data.find((event: GithubEvent) => 
-          event.type === 'PushEvent' || 
+        const relevantEvent = data.find((event: GithubEvent) =>
+          event.type === 'PushEvent' ||
           (event.type === 'CreateEvent' && event.payload.ref_type === 'repository')
         );
-    
+
         if (relevantEvent) {
           if (relevantEvent.type === 'PushEvent') {
             // Handle Push Event
             const commit = relevantEvent.payload.commits[0];
             const repoName = relevantEvent.repo.name.split('/')[1];
             const repoFullName = relevantEvent.repo.name;
-    
+
             setLatestCommit({
               repo: repoName,
               message: commit.message,
@@ -153,7 +162,7 @@ export default function Home() {
             // Handle Create Event
             const repoName = relevantEvent.repo.name.split('/')[1];
             const repoFullName = relevantEvent.repo.name;
-    
+
             setLatestCommit({
               repo: repoName,
               message: `Created new repository`,
@@ -173,24 +182,39 @@ export default function Home() {
         });
       }
     }
+    async function fetchLatestCast() {
+      try {
+        const response = await fetch(
+          'https://nemes.farcaster.xyz:2281/v1/castsByFid?fid=848743&pageSize=1&reverse=1'
+        );
 
-    // Note: Directly fetching from Twitter API requires authentication
-    // This would normally be done through a backend API
-    // For now, I'll use a placeholder/mock
-    function fetchLatestTweet() {
-      // In a real implementation, this would make an API call to your backend
-      // which would then use the Twitter API with proper authentication
+        const json = await response.json();
 
-      // Mocked data (in production, replace with actual API call)
-      setTimeout(() => {
-        setLatestTweet({
-          text: "Check out my latest projects and updates on my portfolio site!",
-          created_at: new Date().toLocaleDateString()
+        if (!json.messages || json.messages.length === 0) {
+          throw new Error('No casts found');
+        }
+
+        const castData = json.messages[0].data;
+        const castHash = json.messages[0].hash;
+
+        setLatestCast({
+          text: castData.castAddBody.text,
+          timestamp: castData.timestamp,
+          url: `https://warpcast.com/awesamarth/${castHash}`
         });
-      }, 500);
+      } catch (error) {
+        console.error('Error fetching Farcaster cast:', error);
+        setLatestCast({
+          text: "Check out my latest projects and updates on my portfolio site!",
+          timestamp: 0,
+          url: "https://warpcast.com/awesamarth"
+        });
+      }
     }
 
-    Promise.all([fetchGithubCommit(), fetchLatestTweet(), fetchRepositories()])
+
+
+    Promise.all([fetchGithubCommit(), fetchLatestCast(), fetchRepositories()])
       .finally(() => setIsLoading(false));
 
   }, []);
@@ -246,26 +270,40 @@ export default function Home() {
 
             <div className="rounded-lg border p-6 bg-card">
               <h2 className="flex items-center gap-2 text-xl font-semibold mb-4">
-                <TwitterIcon className="fill-twitter stroke-twitter" /> Latest Tweet
+                <svg
+                  className="h-6 w-6 fill-farcaster"
+                  aria-hidden="true"
+                  viewBox="0 0 225 225"
+                >
+                  <rect width="225" height="225" rx="50" fill="none"></rect>
+                  <path d="M58 35H167V190H151V119H150.843C149.075 99.3773 132.583 84 112.5 84C92.4169 84 75.9253 99.3773 74.157 119H74V190H58V35Z"></path>
+                  <path d="M29 57L35.5 79H41V168C38.2386 168 36 170.239 36 173V179H35C32.2386 179 30 181.239 30 184V190H86V184C86 181.239 83.7614 179 81 179H80V173C80 170.239 77.7614 168 75 168H69V57H29Z"></path>
+                  <path d="M152 168C149.239 168 147 170.239 147 173V179H146C143.239 179 141 181.239 141 184V190H197V184C197 181.239 194.761 179 192 179H191V173C191 170.239 188.761 168 186 168V79H191.5L198 57H158V168H152Z"></path>
+                </svg>
+                Latest Cast
               </h2>
               {isLoading ? (
                 <p className="text-muted-foreground">Loading...</p>
               ) : (
                 <>
                   <Link
-                    href={`https://twitter.com/awesamarth_`}
+                    href={latestCast?.url || "https://warpcast.com/awesamarth"}
                     target="_blank"
                     rel="noreferrer noopener"
                     className="hover:underline"
                   >
                     <p className="text-muted-foreground">
-                      {latestTweet?.text || "Check out my latest projects and updates on my portfolio site!"}
+                      {latestCast?.text || "Check out my latest projects and updates on my portfolio site!"}
                     </p>
                   </Link>
-                  <p className="text-sm text-muted-foreground mt-4">{latestTweet?.created_at ? `on ${latestTweet.created_at}` : "recently"}</p>
+                  <p className="text-sm text-muted-foreground mt-4">
+                    {latestCast?.timestamp ? `on ${formatFarcasterTimestamp(latestCast.timestamp)}` : "recently"}
+                  </p>
                 </>
               )}
             </div>
+
+
           </div>
 
           {/* Open Source Projects Section */}
@@ -327,7 +365,7 @@ export default function Home() {
               </Link>
             </div>
           </div>
-          
+
           {/* Mints on me! */}
           <div className="mb-12 mt-20">
             <h2 className="text-2xl font-bold mb-3">Proof-of-Visit</h2>
