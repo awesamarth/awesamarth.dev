@@ -1,7 +1,11 @@
 import { GithubIcon, Linkedin, LinkedinIcon, LucideLinkedin, MailIcon, TwitterIcon } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { useTheme } from 'next-themes';
 
 export function Footer() {
+  const { theme } = useTheme();
+
   return (
     <nav className="flex items-center justify-center gap-4 py-3 text-sm bg-[#f2f2f2] dark:bg-[#0e0e0e]">
 
@@ -18,7 +22,14 @@ export function Footer() {
         href="https://twitter.com/awesamarth_"
         className="flex h-10 w-10 items-center justify-center rounded-md p-1 transition-all hover:bg-accent"
       >
-        <TwitterIcon className="h-5 w-5 fill-twitter stroke-twitter" />
+        <div className="relative h-5 w-5">
+          <Image 
+            src="/xlogo.png" 
+            alt="X Logo" 
+            fill 
+            className={`object-contain x-logo`}
+          />
+        </div>
       </Link>
 
 

@@ -142,7 +142,7 @@ export default function Writings() {
                     <div className="pt-20 pb-6">
                         <h1 className="text-4xl font-bold mb-4">Writings</h1>
                         <p className="text-lg text-muted-foreground max-w-3xl">
-                            A collection of articles and tutorials about web3 development, smart contracts, and blockchain technology.
+                            A collection of articles and tutorials, mostly about blockchain protocols and tools.
                         </p>
                     </div>
 

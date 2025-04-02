@@ -74,7 +74,7 @@ export default function Projects() {
           <div className="pt-20 pb-6">
             <h1 className="text-4xl font-bold mb-4">Projects</h1>
             <p className="text-lg text-muted-foreground max-w-3xl">
-              A collection of my open source projects and contributions spanning websites, dApps, and browser extensions among others.
+              A list of my open source projects and contributions spanning across websites, dApps, and browser extensions among others.
             </p>
           </div>
 

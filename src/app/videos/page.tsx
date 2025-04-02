@@ -15,36 +15,30 @@ export default function Videos() {
     // These are the specific video IDs you want to display
     const specificVideos: Video[] = [
         {
-            id: "dQw4w9WgXcQ", // Replace with your actual video IDs
-            title: "Introduction to Web3 Development",
-            description: "Learn the basics of web3 development and blockchain technology."
+            id: "9yBODQDQsWQ", // Replace with your actual video IDs
+            title: "Brainrot Breakdowns Ep1: EigenLayer",
+            description: "This overedited and chaotic video explains EigenLayer in 3 difficulty levels- Noob, Pro and Trenchwarrior."
         },
         {
-            id: "9bZkp7q19f0",
-            title: "Smart Contract Security Tips",
-            description: "Essential security practices for writing secure smart contracts."
+            id: "kPai4Wv5oCE",
+            title: "Croc AI: Your friendly neighbourhood browser assistant",
+            description: "Croc AI is a sidebar-by-default extension that uses in-browser Gemini Nano to transform Chrome into an intelligent companion."
         },
         {
-            id: "QH2-TGUlwu4",
-            title: "Setting Up a Foundry Project",
-            description: "Step-by-step guide to setting up your first Foundry project."
+            id: "P6sJeB_Ghbw",
+            title: "MorphIDE: AI-powered online IDE built for Morph (Sepolia)",
+            description: "MorphIDE (Morph + IDE) is an AI-powered online IDE that can generate smart contracts using AI and can also answer doubts about the Morph blockchain."
         },
         {
-            id: "j5-yKhDd64s",
-            title: "Testing Smart Contracts with Foundry",
-            description: "Learn how to write effective tests for your smart contracts using Foundry."
-        },
-        {
-            id: "kffacxfA7G4",
-            title: "Building a Simple DApp",
-            description: "Create a simple decentralized application from scratch."
+            id: "Ehfui0_DGbg",
+            title: "Can you be trusted with your own crypto? | Bull Market Battletest",
+            description: "Bull Market Battletest is a browser-based game that interactively teaches people about security in the crypto world."
         }
     ];
 
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Short timeout to simulate loading
         const timer = setTimeout(() => {
             setIsLoading(false);
         }, 500);
@@ -64,14 +58,14 @@ export default function Videos() {
                     <div className="pt-20 pb-6">
                         <h1 className="text-4xl font-bold mb-4">Videos</h1>
                         <p className="text-lg text-muted-foreground max-w-3xl">
-                            A selection of videos on my channel consisting of tutorials, project demos and more.
+                            A selection of videos on my channel consisting of tutorials, explainers, project demos and more.
                         </p>
                     </div>
 
                     <div className="my-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                         {isLoading ? (
                             // Loading skeletons
-                            Array(5).fill(0).map((_, i) => (
+                            Array(4).fill(0).map((_, i) => (
                                 <div key={i} className="rounded-lg border p-6 bg-card animate-pulse">
                                     <div className="h-6 bg-muted rounded w-3/4 mb-3"></div>
                                     <div className="h-4 bg-muted rounded w-full mb-4"></div>
@@ -106,7 +100,7 @@ export default function Videos() {
                         )}
                     </div>
 
-                    <div className="flex justify-center mt-8">
+                    <div className="flex justify-center mt-10">
                         <Link
                             href="https://youtube.com/@awesamarth"
                             className="hover:cursor-pointer"
