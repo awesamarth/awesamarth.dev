@@ -46,6 +46,21 @@
   --color-github: #333333;
   --color-email: #EA4335;
   --color-linkedin: #0A66C2;
+  --doom-background: #150000;
+  --doom-foreground: #ff7800;
+  --doom-card: #2a0000;
+  --doom-card-foreground: #ff9000;
+  --doom-primary: #ff4300;
+  --doom-primary-foreground: #000000;
+  --doom-secondary: #3f0000;
+  --doom-secondary-foreground: #ffb000;
+  --doom-muted: #500000;
+  --doom-muted-foreground: #ffa366;
+  --doom-accent: #7a0000;
+  --doom-accent-foreground: #ffb000;
+  --doom-border: #600000;
+  --doom-input: #500000;
+  --doom-ring: #ff5a00;
 
 }
 
@@ -88,6 +103,96 @@
 
 .x-logo {
   filter: var(--x-logo-filter);
+}
+.doom {
+  --background: var(--doom-background);
+  --foreground: var(--doom-foreground);
+  --card: var(--doom-card);
+  --card-foreground: var(--doom-card-foreground);
+  --popover: var(--doom-card);
+  --popover-foreground: var(--doom-card-foreground);
+  --primary: var(--doom-primary);
+  --primary-foreground: var(--doom-primary-foreground);
+  --secondary: var(--doom-secondary);
+  --secondary-foreground: var(--doom-secondary-foreground);
+  --muted: var(--doom-muted);
+  --muted-foreground: var(--doom-muted-foreground);
+  --accent: var(--doom-accent);
+  --accent-foreground: var(--doom-accent-foreground);
+  --destructive: #ff0000;
+  --border: var(--doom-border);
+  --input: var(--doom-input);
+  --ring: var(--doom-ring);
+
+  /* Social media colors - keep them recognizable */
+  --color-twitter: #1DA1F2;
+  --color-farcaster: #855DCD;
+  --color-github: #111111;
+  --color-email: #ff3c00;
+  --color-linkedin: #0A66C2;
+  --x-logo-filter: none;
+
+  
+  /* DOOM font overrides */
+  font-family: 'Press Start 2P', monospace !important;
+}
+
+.doom h1, .doom h2, .doom h3 {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0.1em 0.1em 0 #000, 0.15em 0.15em 0 #700;
+}
+
+.doom .navbar, .doom .footer {
+  background-color: #000000;
+  border-color: var(--doom-primary);
+}
+
+.doom-cursor, 
+.doom-cursor * {
+  cursor: var(--doom-cursor) !important;
+}
+
+.doom p, 
+.doom .text-muted-foreground, 
+.doom div:not(h1):not(h2):not(h3) {
+  font-size: 0.9rem !important;
+  line-height: 1.4 !important;
+}
+
+.doom h1 {
+  font-size: 1.75rem !important;
+  line-height: 1.6 !important;
+}
+
+.doom h2 {
+  font-size: 1.3rem !important;
+  line-height: 1.5 !important;
+}
+
+.doom h3, .doom .text-xl {
+  font-size: 1rem !important;
+  line-height: 1.75 !important;
+}
+
+
+/* Add pixelated borders to cards in DOOM theme */
+.doom .rounded-lg {
+  border-width: 2px;
+  border-style: solid;
+  border-image-slice: 2;
+  border-image-width: 2;
+  border-image-outset: 0;
+  border-image-source: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAAAd7EOsAAAAO0lEQVQYGWP8//8/AyFgwqmgZ9pPRkLq0OWZcCpgZGLEqQBDAC4I1wFTBDcJLovhAYIhCFGAywwUQQB3qRk3yubfsQAAAABJRU5ErkJggg==");
+}
+
+.doom .navbar, 
+.doom nav, 
+.doom footer, 
+.doom .footer {
+  background-color: #000000 !important;
+  border-bottom: 2px solid var(--doom-primary);
+  border-top: 2px solid var(--doom-primary);
 }
 
 .dark {

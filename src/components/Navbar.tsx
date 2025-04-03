@@ -1,21 +1,35 @@
 // components/Navbar.tsx
+'use client'
+
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun } from "lucide-react";
-import { ModeToggle } from "@/components/ModeToggle"; // Import ModeToggle component
+import { Menu, Moon, Sun, X } from "lucide-react";
+import { ModeToggle } from "@/components/ModeToggle";
+import { useState } from "react";
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className="w-full py-6 z-[9999] px-20 fixed top-0 dark:bg-[#0e0e0e] bg-[#f2f2f2] ">
+    <nav className="w-full py-6 z-[9999] px-4 sm:px-6 md:px-20 fixed top-0 dark:bg-[#0e0e0e] bg-[#f2f2f2]">
       <div className="container flex items-center justify-between">
-        <div className="flex items-center gap-6">
+        {/* Mobile menu button */}
+        <button 
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="md:hidden"
+          aria-label="Toggle menu"
+        >
+          {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+
+        {/* Desktop navigation */}
+        <div className="hidden md:flex items-center gap-6">
           <Link href="/" className="text-sm font-medium transition-colors hover:text-primary">
             Home
           </Link>
-          <Link href="/projects" className="text- text-sm font-medium transition-colors hover:text-primary">
+          <Link href="/projects" className="text-sm font-medium transition-colors hover:text-primary">
             Projects
           </Link>
           <Link href="/writings" className="text-sm font-medium transition-colors hover:text-primary">
@@ -28,8 +42,51 @@ export default function Navbar() {
             Contact
           </Link>
         </div>
+
+        {/* Mobile navigation overlay */}
+        {isMenuOpen && (
+          <div className="md:hidden absolute top-[100%] left-0 right-0 p-4 dark:bg-[#0e0e0e] bg-[#f2f2f2] border-b">
+            <div className="flex flex-col space-y-4">
+              <Link 
+                href="/" 
+                className="text-sm font-medium transition-colors hover:text-primary"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link 
+                href="/projects" 
+                className="text-sm font-medium transition-colors hover:text-primary"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Projects
+              </Link>
+              <Link 
+                href="/writings" 
+                className="text-sm font-medium transition-colors hover:text-primary"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Writings
+              </Link>
+              <Link 
+                href="/videos" 
+                className="text-sm font-medium transition-colors hover:text-primary"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Videos
+              </Link>
+              <Link 
+                href="/contact" 
+                className="text-sm font-medium transition-colors hover:text-primary"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contact
+              </Link>
+            </div>
+          </div>
+        )}
         
-        {/* Add ModeToggle on the right side */}
+        {/* Theme toggle - always visible */}
         <ModeToggle />
       </div>
     </nav>

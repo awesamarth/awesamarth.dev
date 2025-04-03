@@ -1,3 +1,5 @@
+'use client'
+
 import { GithubIcon, Linkedin, LinkedinIcon, LucideLinkedin, MailIcon, TwitterIcon } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,7 +16,7 @@ export function Footer() {
         href="https://github.com/awesamarth"
         className="flex h-10 w-10 items-center justify-center rounded-md p-1 transition-all hover:bg-accent"
       >
-        <GithubIcon className="h-5 w-5 fill-current stroke-current" />
+        <GithubIcon className={`h-5 w-5 ${theme=="light"?"fill-white stroke-github":"fill-white stroke-white"} fill-github stroke-github`} />
       </Link>
 
       <Link
@@ -27,7 +29,8 @@ export function Footer() {
             src="/xlogo.png" 
             alt="X Logo" 
             fill 
-            className={`object-contain x-logo`}
+            className={`object-contain x-logo
+              `}
           />
         </div>
       </Link>

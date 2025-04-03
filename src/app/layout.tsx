@@ -1,11 +1,18 @@
-'use client'
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Press_Start_2P } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider"
+import { headers } from 'next/headers'
+import { DoomEasterEgg } from '@/components/DoomEasterEgg'
+import { DoomEffects } from '@/components/DoomEffects'
+
+
 
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import ContextProvider from "@/context";
+import { useAppKitTheme } from "@reown/appkit/react";
+import { useTheme } from "next-themes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,29 +24,42 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const pressStart2P = Press_Start_2P({
+  weight: '400',
+  variable: '--font-doom',
+  subsets: ['latin'],
+});
 
-export default function RootLayout({
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers()
+  const cookies = headersList.get('cookie')
+
   return (
     <html lang="en" suppressHydrationWarning>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} ${pressStart2P.variable} antialiased`}
       >
-                <Navbar />
-        
-          {children}
-          <Footer />
-      </ThemeProvider>
-        </body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ContextProvider cookies={cookies}>
+            <DoomEasterEgg />
+            <DoomEffects />
+
+            <Navbar />
+            {children}
+            <Footer />
+          </ContextProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

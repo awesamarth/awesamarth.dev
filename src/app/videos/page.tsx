@@ -107,7 +107,7 @@ export default function Videos() {
                             target="_blank"
                             rel="noreferrer noopener"
                         >
-                            <Button className="flex items-center gap-2 hover:cursor-pointer">
+                            <Button variant="outline" className="flex items-center gap-2 hover:cursor-pointer">
                                 View All Videos <span className="transform font-bold text-lg rotate-45">↑</span>
                             </Button>
                         </Link>

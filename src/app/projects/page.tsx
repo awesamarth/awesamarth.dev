@@ -97,6 +97,7 @@ export default function Projects() {
               ))
             ) : repositories.length > 0 ? (
               // Display actual repositories
+              // Update the repository cards in the projects page
               repositories.map((repo) => (
                 <Link
                   key={repo.name}
@@ -124,7 +125,8 @@ export default function Projects() {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between">
+                  {/* Modified footer layout for better mobile display */}
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <span
                         className="w-3 h-3 rounded-full"
@@ -147,7 +149,7 @@ export default function Projects() {
           </div>
           <div className="flex justify-center mt-8">
             <Link href="https://github.com/awesamarth?tab=repositories" className="hover:cursor-pointer" target="_blank" rel="noreferrer noopener">
-              <Button className="flex items-center gap-2 hover:cursor-pointer">
+              <Button variant="outline" className="flex items-center gap-2 hover:cursor-pointer">
                 View All Repositories <span className="transform font-bold text-lg rotate-45">↑</span>
               </Button>
             </Link>

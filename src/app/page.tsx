@@ -1,4 +1,5 @@
 'use client'
+
 import Head from "next/head";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
@@ -7,6 +8,9 @@ import { GithubIcon, TwitterIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getLanguageColor } from "@/utils";
+import { useAccount } from 'wagmi'
+import { useTheme } from 'next-themes';
+
 
 export default function Home() {
   type GithubCommit = {
@@ -37,7 +41,12 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [repositories, setRepositories] = useState<Repository[]>([]);
 
+  const { address } = useAccount()
   const specificRepos = ["mega-cli", "croc-ai", "gambit", "morphide"];
+
+  const { theme } = useTheme();
+  const isDoomActive = theme === 'doom';
+
 
   async function fetchRepositories() {
     try {
@@ -240,6 +249,17 @@ export default function Home() {
                 I'm a 21 year old Full-Stack dev, Smart Contract dev and DevRel from India. I'm extremely curious and on a
                 pursuit of knowledge. I believe that being sincere is much important than being serious.
               </p>
+
+              <p className="text-muted-foreground [&:not(:first-child)]:mt-6">
+                Fun fact: I love DOOM. A lot.
+                {typeof window !== 'undefined' && 'ontouchstart' in window === false && (
+                  isDoomActive ? (
+                    <span className="ml-1 font-bold text-primary">{" "}RIP AND TEAR!</span>
+                  ) : (
+                    <span className="ml-1">It is hidden somewhere on this site too, see if you can find it!</span>
+                  )
+                )}
+              </p>
             </div>
 
           </div>
@@ -327,6 +347,7 @@ export default function Home() {
                 ))
               ) : repositories.length > 0 ? (
                 // Display actual repositories
+                // Update the repository card structure in your component
                 repositories.map((repo) => (
                   <Link
                     key={repo.name}
@@ -337,7 +358,9 @@ export default function Home() {
                   >
                     <h3 className="text-xl font-semibold">{repo.name}</h3>
                     <p className="text-muted-foreground mb-4">{repo.description}</p>
-                    <div className="flex items-center justify-between">
+
+                    {/* Modified footer layout for better mobile display */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <span
                           className="w-3 h-3 rounded-full"
@@ -345,7 +368,9 @@ export default function Home() {
                         ></span>
                         <span>{repo.language}</span>
                       </div>
-                      <span className="text-sm text-muted-foreground">Updated on {repo.updated_at}</span>
+                      <span className="text-sm text-muted-foreground">
+                        Updated on {repo.updated_at}
+                      </span>
                     </div>
                   </Link>
                 ))
@@ -366,18 +391,26 @@ export default function Home() {
             </div>
           </div>
 
+
+
           {/* Mints on me! */}
           <div className="mb-12 mt-20">
             <h2 className="text-2xl font-bold mb-3">Proof-of-Visit</h2>
-            <h3 className="text-xl mb-6">Grab a special NFT as a souvenir of your visit. Gas is on me!</h3>
+            <h3 className="text-xl mb-6">Grab a special NFT on MegaETH testnet as a souvenir of your visit. Gas is on me!</h3>
 
+            <div className="flex items-center gap-4">
+              {/* Web3Modal button for connecting */}
+              <w3m-button />
 
-            <div className="flex justify-end mt-4">
-              <Link href="https://github.com/awesamarth?tab=repositories" target="_blank" rel="noreferrer noopener">
-                <Button variant="outline" className="flex hover:cursor-pointer items-center gap-2">
-                  View All <span className="transform rotate-45">↑</span>
+              {/* Custom mint button that appears only when connected */}
+              {address && (
+                <Button
+                  className="hover:cursor-pointer py-2 px-6 font-semibold text-[17px] bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
+                  onClick={() => {/* Handle mint function here */ }}
+                >
+                  Mint NFT
                 </Button>
-              </Link>
+              )}
             </div>
           </div>
         </main>

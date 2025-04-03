@@ -76,7 +76,7 @@ export default function Contact() {
               </div>
 
               <div className="flex items-center gap-3">
-                <GithubIcon className="h-6 w-6" />
+                <GithubIcon className={`h-6 w-6 ${theme=="light"?"fill-white stroke-github":"fill-white stroke-white"}`} />
                 <span className="font-medium">Github:</span>
                 <Link
                   href="https://github.com/awesamarth"

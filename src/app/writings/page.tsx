@@ -203,7 +203,7 @@ export default function Writings() {
                             target="_blank"
                             rel="noreferrer noopener"
                         >
-                            <Button className="flex items-center gap-2 mt-5 hover:cursor-pointer">
+                            <Button variant="outline" className="flex items-center gap-2 mt-5 hover:cursor-pointer">
                                 View All Articles <span className="transform font-bold text-lg rotate-45">↑</span>
                             </Button>
                         </Link>
