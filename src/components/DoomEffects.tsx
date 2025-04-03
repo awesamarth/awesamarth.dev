@@ -63,7 +63,7 @@ export function DoomEffects() {
         gunshotSoundRef.current.currentTime = 0;
         
         // Play the gunshot sound
-        gunshotSoundRef.current.volume = 0.3;
+        gunshotSoundRef.current.volume = 0.1;
         gunshotSoundRef.current.play().catch(e => console.log('Audio play failed:', e));
       }
     }
