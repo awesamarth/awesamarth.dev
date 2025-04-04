@@ -153,6 +153,13 @@
   cursor: var(--doom-cursor) !important;
 }
 
+/* Special handling for hover in DOOM theme */
+.doom .project-card:hover,
+.doom a.rounded-lg.border:hover {
+  border-image: none !important;
+  border: 2px solid var(--doom-primary) !important;
+}
+
 .doom p, 
 .doom .text-muted-foreground, 
 .doom div:not(h1):not(h2):not(h3) {

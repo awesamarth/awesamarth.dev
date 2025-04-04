@@ -8,20 +8,27 @@ export function useKeySequence(sequence: string) {
   const [keys, setKeys] = useState<string[]>([])
   const { theme, setTheme } = useTheme()
   const unlockedSoundRef = useRef<HTMLAudioElement | null>(null)
-
   
-  // Add this effect to check for doom theme on page load
+  // Initialize audio on component mount, regardless of theme
   useEffect(() => {
-    // If the page loads with doom theme, revert to the previous theme or system
+    // Create the audio element once on mount
+    unlockedSoundRef.current = new Audio('/unlocked.mp3')
+    
+    // Check if the page loaded with doom theme
     if (theme === 'doom') {
       const savedTheme = localStorage.getItem('previousTheme') || 'system'
       setTheme(savedTheme)
       localStorage.removeItem('previousTheme')
-      unlockedSoundRef.current = new Audio('/unlocked.mp3')
-
     }
-  }, [])
-
+    
+    // Cleanup function
+    return () => {
+      if (unlockedSoundRef.current) {
+        unlockedSoundRef.current = null
+      }
+    }
+  }, []) // Empty dependency array - only runs once on mount
+  
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const newKeys = [...keys, event.key.toLowerCase()]
@@ -48,10 +55,24 @@ export function useKeySequence(sequence: string) {
           // Store current theme before switching to DOOM
           localStorage.setItem('previousTheme', theme || 'system')
           setTheme('doom')
-
+          
+          // Play sound only after ensuring it's loaded
           if (unlockedSoundRef.current) {
-            unlockedSoundRef.current.volume = 0.1
-            unlockedSoundRef.current.play().catch(e => console.log('Audio play failed:', e))
+            // Make sure the audio is ready
+            unlockedSoundRef.current.load();
+            unlockedSoundRef.current.volume = 0.1;
+            
+            // Use a timeout to ensure the audio context is ready
+            setTimeout(() => {
+              unlockedSoundRef.current?.play().catch(e => {
+                console.log('Audio play failed:', e);
+                // Try one more time after a user interaction
+                document.addEventListener('click', function playOnce() {
+                  unlockedSoundRef.current?.play();
+                  document.removeEventListener('click', playOnce);
+                }, { once: true });
+              });
+            }, 50);
           }
         }
         

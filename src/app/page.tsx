@@ -4,12 +4,16 @@ import Head from "next/head";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
-import { GithubIcon, TwitterIcon } from "lucide-react";
+import { GithubIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getLanguageColor } from "@/utils";
-import { useAccount } from 'wagmi'
+import { useAccount, useReadContract } from 'wagmi'
 import { useTheme } from 'next-themes';
+import { useRouter } from "next/navigation"
+import { ABI, LOCAL_DOOMGOAT_ADDRESS, LOCAL_GOAT_ADDRESS, MEGA_DOOMGOAT_ADDRESS, MEGA_GOAT_ADDRESS} from "@/constants";
+import { foundry } from "viem/chains";
+
 
 
 export default function Home() {
@@ -40,12 +44,35 @@ export default function Home() {
   const [latestCast, setLatestCast] = useState<Cast | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [repositories, setRepositories] = useState<Repository[]>([]);
+  const [isMinting, setIsMinting] = useState(false);
+  const [mintError, setMintError] = useState<string | null>(null);
+  const [alreadyMinted, setAlreadyMinted] = useState(false);
 
   const { address } = useAccount()
   const specificRepos = ["mega-cli", "croc-ai", "gambit", "morphide"];
+  const router = useRouter()
 
   const { theme } = useTheme();
   const isDoomActive = theme === 'doom';
+
+  const initialAlreaadyMinted = useReadContract({
+    abi: ABI,
+    address: theme==="doom"?MEGA_DOOMGOAT_ADDRESS:MEGA_GOAT_ADDRESS,
+    functionName: 'hasMinted',
+    args:[address]
+  })
+
+  console.log(initialAlreaadyMinted.data)
+
+  useEffect(() => {
+
+    if (initialAlreaadyMinted?.data === true) {
+      setAlreadyMinted(true);
+    }
+    else{
+      setAlreadyMinted(false)
+    }
+  }, [initialAlreaadyMinted?.data, theme]);
 
 
   async function fetchRepositories() {
@@ -128,6 +155,50 @@ export default function Home() {
     const date = new Date(farcasterEpochStart + (timestamp * 1000));
     return date.toLocaleDateString();
   }
+
+  const mintNFT = async () => {
+    if (!address) return;
+
+    setIsMinting(true);
+    setMintError(null);
+    setAlreadyMinted(false);
+
+    try {
+      const response = await fetch('/api', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ address, theme }),
+      });
+
+      const data = await response.json();
+      console.log(data);
+
+      if (!response.ok) {
+
+        console.log("here's the error: ", data.error)
+        // Check if it's the "already minted" error
+        if (data.error && data.error.includes('already minted')) {
+          console.log("yes already minted")
+          setAlreadyMinted(true);
+          throw new Error('You have already minted an NFT!');
+        }
+        throw new Error(data.error || 'Failed to mint NFT');
+      }
+
+      // Success case - redirect to the thank you page with tokenId and txHash
+      router.push(`/thank-you?tokenId=${data.tokenId}&txHash=${data.txHash}&theme=${theme}`);
+      return data;
+    } catch (error) {
+      console.error('Error calling API:', error);
+      //@ts-ignore
+      setMintError(error.message);
+      throw error;
+    } finally {
+      setIsMinting(false);
+    }
+  };
 
 
 
@@ -246,7 +317,7 @@ export default function Home() {
                 Hey, I'm Samarth!
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl mb-4">
-                I'm a 21 year old Full-Stack dev, Smart Contract dev and DevRel from India. I'm extremely curious and on a
+                I am a 21 year old Full-Stack dev, Smart Contract dev and DevRel from India. I am extremely curious and on a
                 pursuit of knowledge. I believe that being sincere is much important than being serious.
               </p>
 
@@ -398,18 +469,35 @@ export default function Home() {
             <h2 className="text-2xl font-bold mb-3">Proof-of-Visit</h2>
             <h3 className="text-xl mb-6">Grab a special NFT on MegaETH testnet as a souvenir of your visit. Gas is on me!</h3>
 
-            <div className="flex items-center gap-4">
-              {/* Web3Modal button for connecting */}
-              <w3m-button />
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                {/* Web3Modal button for connecting */}
+                <w3m-button />
 
-              {/* Custom mint button that appears only when connected */}
-              {address && (
-                <Button
-                  className="hover:cursor-pointer py-2 px-6 font-semibold text-[17px] bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
-                  onClick={() => {/* Handle mint function here */ }}
-                >
-                  Mint NFT
-                </Button>
+                {/* Custom mint button that appears only when connected */}
+                {address && (
+                  <Button
+                    className=" hover:cursor-pointer py-2 px-6 font-semibold text-[17px] bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
+                    onClick={mintNFT}
+                    disabled={isMinting || alreadyMinted}
+                  >
+                    {isMinting ? 'Minting...' : 'Mint NFT'}
+                  </Button>
+                )}
+              </div>
+
+              {/* Display error message if there is one */}
+              {mintError && (
+                <div className="p-4 bg-destructive/10 text-destructive rounded-md">
+                  {mintError}
+                </div>
+              )}
+
+              {/* Display already minted message */}
+              {alreadyMinted && (
+                <div className="py-4 bg-secondary/20 rounded-md">
+                  You've already claimed your NFT! Thank you for visiting.
+                </div>
               )}
             </div>
           </div>
