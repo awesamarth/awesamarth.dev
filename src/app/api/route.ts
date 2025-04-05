@@ -7,16 +7,13 @@ import { LOCAL_GOAT_ADDRESS, LOCAL_DOOMGOAT_ADDRESS, ABI, MEGA_DOOMGOAT_ADDRESS,
 const DEV_ACCOUNT = privateKeyToAccount(process.env.DEV_PRIVATE_KEY as `0x${string}`)
 const LOCAL_ACCOUNT = privateKeyToAccount(process.env.LOCAL_PRIVATE_KEY as `0x${string}`)
 
-export const walletClient = createWalletClient({
+const walletClient = createWalletClient({
     chain: megaethTestnet,
     transport: http(),
     account:  DEV_ACCOUNT
   }).extend(publicActions)
 
 export async function POST(req:NextRequest) {
-
-
-
 
     try {
       // Parse the JSON body from the request
