@@ -4,9 +4,6 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { headers } from 'next/headers'
 import { DoomEasterEgg } from '@/components/DoomEasterEgg'
 import { DoomEffects } from '@/components/DoomEffects'
-
-
-
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -29,6 +26,13 @@ const pressStart2P = Press_Start_2P({
   variable: '--font-doom',
   subsets: ['latin'],
 });
+
+
+
+export const metadata: Metadata = {
+  title: "Samarth Saxena | Portfolio",
+  description: "Portfolio showcasing my dev work and content",
+};
 
 
 export default async function RootLayout({
