@@ -14,8 +14,15 @@ type Video = {
 export default function Videos() {
     // These are the specific video IDs you want to display
     const specificVideos: Video[] = [
+        
+
         {
-            id: "9yBODQDQsWQ", // Replace with your actual video IDs
+            id: "uLLzEAp9DL4", 
+            title: "Mega CLI: The Ultimate CLI Tool for MegaETH",
+            description: "A free and open-source CLI tool for MegaETH devs and users with multiple different commands"
+        },
+        {
+            id: "9yBODQDQsWQ", 
             title: "Brainrot Breakdowns Ep1: EigenLayer",
             description: "This overedited and chaotic video explains EigenLayer in 3 difficulty levels- Noob, Pro and Trenchwarrior."
         },
@@ -30,10 +37,16 @@ export default function Videos() {
             description: "MorphIDE (Morph + IDE) is an AI-powered online IDE that can generate smart contracts using AI and can also answer doubts about the Morph blockchain."
         },
         {
+            id: "BFkGr0LqSYc", 
+            title: "Gambit: Chess on the blockchain",
+            description: "Gambit is a game which combines authentic and pure chess gameplay with crypto wagering facilities. There are 4 game modes: Ranked, Unranked, Arena and Private."
+        },
+        {
             id: "Ehfui0_DGbg",
             title: "Can you be trusted with your own crypto? | Bull Market Battletest",
             description: "Bull Market Battletest is a browser-based game that interactively teaches people about security in the crypto world."
-        }
+        },
+
     ];
 
     const [isLoading, setIsLoading] = useState(true);
@@ -65,7 +78,7 @@ export default function Videos() {
                     <div className="my-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                         {isLoading ? (
                             // Loading skeletons
-                            Array(4).fill(0).map((_, i) => (
+                            Array(6).fill(0).map((_, i) => (
                                 <div key={i} className="rounded-lg border p-6 bg-card animate-pulse">
                                     <div className="h-6 bg-muted rounded w-3/4 mb-3"></div>
                                     <div className="h-4 bg-muted rounded w-full mb-4"></div>
