@@ -308,11 +308,10 @@ export default function Home() {
       </Head>
 
       <div className="min-h-screen bg-background dark:bg-[#191919] text-foreground">
-
-        <main className="container py-12 px-20">
+        <main className="max-w-screen-2xl mx-auto py-12 px-4 sm:px-6 md:px-20">
           {/* Hero Section */}
           <div className="flex flex-col-reverse md:flex-row items-center justify-between pt-24 pb-2 gap-8">
-            <div>
+            <div className="max-w-4xl">
               <h1 className="text-4xl font-bold mb-4 pb-3 border-b-2">
                 Hey, I'm Samarth!
               </h1>
@@ -332,7 +331,6 @@ export default function Home() {
                 )}
               </p>
             </div>
-
           </div>
 
           {/* Latest Commit and Tweet Section */}
@@ -393,8 +391,6 @@ export default function Home() {
                 </>
               )}
             </div>
-
-
           </div>
 
           {/* Open Source Projects Section */}
@@ -418,7 +414,6 @@ export default function Home() {
                 ))
               ) : repositories.length > 0 ? (
                 // Display actual repositories
-                // Update the repository card structure in your component
                 repositories.map((repo) => (
                   <Link
                     key={repo.name}
@@ -462,8 +457,6 @@ export default function Home() {
             </div>
           </div>
 
-
-
           {/* Mints on me! */}
           <div className="mb-12 mt-20">
             <h2 className="text-2xl font-bold mb-3">Proof-of-Visit</h2>
@@ -477,7 +470,7 @@ export default function Home() {
                 {/* Custom mint button that appears only when connected */}
                 {address && (
                   <Button
-                    className=" hover:cursor-pointer py-2 px-6 font-semibold text-[17px] bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
+                    className="hover:cursor-pointer py-2 px-6 font-semibold text-[17px] bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
                     onClick={mintNFT}
                     disabled={isMinting || alreadyMinted}
                   >
@@ -495,7 +488,7 @@ export default function Home() {
 
               {/* Display already minted message */}
               {alreadyMinted && (
-                <div className="py-4 bg-secondary/20 rounded-md">
+                <div className="py-4 px-4 bg-secondary/20 rounded-md">
                   You've already claimed your NFT! Thank you for visiting.
                 </div>
               )}

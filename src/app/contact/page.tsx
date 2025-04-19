@@ -17,7 +17,7 @@ export default function Contact() {
       </Head>
 
       <div className="min-h-screen bg-background dark:bg-[#191919] text-foreground" suppressHydrationWarning>
-        <main className="container py-12 px-4 md:px-20">
+        <main className="max-w-screen-2xl mx-auto py-12 px-4 sm:px-6 md:px-20">
           <div className="pt-20 pb-12">
             <h1 className="text-4xl font-bold mb-12">Contact</h1>
 
@@ -83,7 +83,7 @@ export default function Contact() {
 
               <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
                 <div className="flex items-center gap-3">
-                  <GithubIcon className={`h-6 w-6 ${theme=="light"?"fill-white stroke-github":"fill-white stroke-white"}`} />
+                  <GithubIcon className={`h-6 w-6 ${theme == "light" ? "fill-white stroke-github" : "fill-white stroke-white"}`} />
                   <span className="font-medium">Github:</span>
                 </div>
                 <Link

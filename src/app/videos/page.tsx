@@ -14,15 +14,15 @@ type Video = {
 export default function Videos() {
     // These are the specific video IDs you want to display
     const specificVideos: Video[] = [
-        
+
 
         {
-            id: "uLLzEAp9DL4", 
+            id: "uLLzEAp9DL4",
             title: "Mega CLI: The Ultimate CLI Tool for MegaETH",
             description: "A free and open-source CLI tool for MegaETH devs and users with multiple different commands"
         },
         {
-            id: "9yBODQDQsWQ", 
+            id: "9yBODQDQsWQ",
             title: "Brainrot Breakdowns Ep1: EigenLayer",
             description: "This overedited and chaotic video explains EigenLayer in 3 difficulty levels- Noob, Pro and Trenchwarrior."
         },
@@ -37,7 +37,7 @@ export default function Videos() {
             description: "MorphIDE (Morph + IDE) is an AI-powered online IDE that can generate smart contracts using AI and can also answer doubts about the Morph blockchain."
         },
         {
-            id: "BFkGr0LqSYc", 
+            id: "BFkGr0LqSYc",
             title: "Gambit: Chess on the blockchain",
             description: "Gambit is a game which combines authentic and pure chess gameplay with crypto wagering facilities. There are 4 game modes: Ranked, Unranked, Arena and Private."
         },
@@ -65,9 +65,8 @@ export default function Videos() {
                 <title>Videos - Samarth Saxena</title>
                 <meta name="description" content="Video tutorials and content by Samarth Saxena" />
             </Head>
-
             <div className="min-h-screen bg-background dark:bg-[#191919] text-foreground">
-                <main className="container py-12 px-20">
+                <main className="max-w-screen-2xl mx-auto py-12 px-4 sm:px-6 md:px-20">
                     <div className="pt-20 pb-6">
                         <h1 className="text-4xl font-bold mb-4">Videos</h1>
                         <p className="text-lg text-muted-foreground max-w-3xl">

@@ -70,7 +70,7 @@ export default function Projects() {
       </Head>
 
       <div className="min-h-screen bg-background dark:bg-[#191919] text-foreground">
-        <main className="container py-12 px-20">
+        <main className="max-w-screen-2xl mx-auto py-12 px-4 sm:px-6 md:px-20">
           <div className="pt-20 pb-6">
             <h1 className="text-4xl font-bold mb-4">Projects</h1>
             <p className="text-lg text-muted-foreground max-w-3xl">
@@ -80,7 +80,7 @@ export default function Projects() {
 
           {/* Projects Grid */}
           <div className="my-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {isLoading ? (
+          {isLoading ? (
               // Loading skeletons
               Array(9).fill(0).map((_, i) => (
                 <div key={i} className="rounded-lg border p-6 bg-card animate-pulse">

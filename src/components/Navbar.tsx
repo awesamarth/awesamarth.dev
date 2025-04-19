@@ -13,8 +13,8 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className="w-full py-6 z-[9999] px-4 sm:px-6 md:px-20 fixed top-0 dark:bg-[#0e0e0e] bg-[#f2f2f2]">
-      <div className="container flex items-center justify-between">
+    <nav className="w-full py-6 z-[9999] fixed top-0 dark:bg-[#0e0e0e] bg-[#f2f2f2]">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 md:px-20 flex items-center justify-between">
         {/* Mobile menu button */}
         <button 
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -46,7 +46,7 @@ export default function Navbar() {
         {/* Mobile navigation overlay */}
         {isMenuOpen && (
           <div className="md:hidden absolute top-[100%] left-0 right-0 p-4 dark:bg-[#0e0e0e] bg-[#f2f2f2] border-b">
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-4 max-w-screen-2xl mx-auto px-4 sm:px-6 md:px-20">
               <Link 
                 href="/" 
                 className="text-sm font-medium transition-colors hover:text-primary"
