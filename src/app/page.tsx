@@ -317,7 +317,7 @@ export default function Home() {
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl mb-4">
                 I am a 21 year old Full-Stack dev, Smart Contract dev and DevRel from India. I am extremely curious and on a
-                pursuit of knowledge. I believe that being sincere is much important than being serious.
+                pursuit of knowledge. I believe that being sincere is much more important than being serious.
               </p>
 
               <p className="text-muted-foreground [&:not(:first-child)]:mt-6">
