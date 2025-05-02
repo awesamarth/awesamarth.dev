@@ -63,14 +63,43 @@ function ThemeSynchronizer() {
   return null
 }
 
+// In src/context/index.tsx - modify the ContextProvider
+
 function ContextProvider({ children, cookies }: { children: ReactNode; cookies: string | null }) {
   const [mounted, setMounted] = useState(false)
+  const [initialState, setInitialState] = useState<any>(undefined)
   
   useEffect(() => {
     setMounted(true)
-  }, [])
-
-  const initialState = cookieToInitialState(wagmiAdapter.wagmiConfig, cookies)
+    
+    // Function to attempt initializing the state with retries
+    const initializeState = async () => {
+      let attempts = 0;
+      const maxAttempts = 3;
+      
+      while (attempts < maxAttempts) {
+        try {
+          // Try to initialize the state
+          const state = cookieToInitialState(wagmiAdapter.wagmiConfig, cookies)
+          setInitialState(state)
+          return // Success - exit the function
+        } catch (error) {
+          attempts++
+          console.error(`Error initializing wagmi state (attempt ${attempts}/${maxAttempts}):`, error)
+          
+          if (attempts >= maxAttempts) {
+            console.warn("Max retry attempts reached. Continuing without blockchain state.")
+            return // Give up after max attempts
+          }
+          
+          // Wait before retrying (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempts))
+        }
+      }
+    }
+    
+    initializeState()
+  }, [cookies])
 
   if (!mounted) {
     return null
