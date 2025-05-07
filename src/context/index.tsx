@@ -113,6 +113,6 @@ function ContextProvider({ children, cookies }: { children: ReactNode; cookies: 
       </QueryClientProvider>
     </WagmiProvider>
   )
-}
+} 
 
 export default ContextProvider
