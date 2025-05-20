@@ -6,6 +6,7 @@ import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect } from 'react';
+import { MEGA_DOOMGOAT_ADDRESS, MEGA_GOAT_ADDRESS } from '@/constants';
 
 export default function ThankYou() {
     const searchParams = useSearchParams();
@@ -29,6 +30,16 @@ export default function ThankYou() {
         return null;
     }
 
+    function getRaribleUrl(){
+        if (isDoom){
+            return `https://testnet.rarible.fun/items/megaethtestnet/${MEGA_DOOMGOAT_ADDRESS}:${tokenId}`
+        }
+
+        else{
+            return `https://testnet.rarible.fun/items/megaethtestnet/${MEGA_GOAT_ADDRESS}:${tokenId}`
+        }
+    }
+
     return (
         <div className="min-h-screen bg-background dark:bg-[#191919] text-foreground">
             <main className="container py-12 px-20">
@@ -41,14 +52,24 @@ export default function ThankYou() {
                             )}
                         </h1>
 
-                        <div className="relative w-full h-64 mb-6 rounded-md overflow-hidden border">
-                            <Image
-                                src={isDoom ? '/doom-nft.jpg' : '/regular-nft.jpg'}
-                                alt="Your NFT"
-                                fill
-                                className="object-contain"
-                                priority
-                            />
+                        <div className="relative w-full h-64 mb-6 rounded-md overflow-hidden border group">
+                            <Link href={getRaribleUrl()}>
+                                <div className="relative w-full h-full">
+                                    <Image
+                                        src={isDoom ? '/doom-nft.jpg' : '/regular-nft.jpg'}
+                                        alt="Your NFT"
+                                        fill
+                                        className="object-cover"
+                                        priority
+                                    />
+                                    {/* Overlay with View on Rarible text */}
+                                    <div className={`absolute inset-0 ${isDoom?"bg-black/70":"bg-black/80"} flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
+                                        <div className="flex flex-col items-center space-y-2">
+                                            <span className="text-pink-500 font-bold text-lg ">View on Rarible</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Link>
                         </div>
 
                         <div className="space-y-3 mb-6">
@@ -69,7 +90,6 @@ export default function ThankYou() {
                         <p className="text-muted-foreground text-center ">
                             This NFT on MegaETH testnet has been minted to your wallet as a token of your visit.
                             {isDoom && " You discovered the DOOM easter egg - this is a special edition NFT."} Enjoy! 
-
                         </p>
 
                         <div className="flex justify-center mt-8">

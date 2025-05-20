@@ -15,6 +15,16 @@ export default function Videos() {
     // These are the specific video IDs you want to display
     const specificVideos: Video[] = [
 
+        {
+            id: "0ktNilzUN40",
+            title: "How to Generate your First Proof on Succinct Network",
+            description: "This video is a dev tutorial showing you how you can generate your first proof on Succinct Network. Zero to Dev: Episode 1."
+        },
+        {
+            id: "sTtdiDvfS34",
+            title: "Succinct Network Explained in 3 Difficulty Levels",
+            description: "This overedited and chaotic video explains Succinct Network in 3 difficulty levels- Noob, Pro and Trenchwarrior. Brainrot Breakdowns: Episode 2."
+        },
 
         {
             id: "uLLzEAp9DL4",
@@ -23,8 +33,8 @@ export default function Videos() {
         },
         {
             id: "9yBODQDQsWQ",
-            title: "Brainrot Breakdowns Ep1: EigenLayer",
-            description: "This overedited and chaotic video explains EigenLayer in 3 difficulty levels- Noob, Pro and Trenchwarrior."
+            title: "EigenLayer Explained in 3 Difficulty Levels",
+            description: "This overedited and chaotic video explains EigenLayer in 3 difficulty levels- Noob, Pro and Trenchwarrior. Brainrot Breakdowns: Episode 1."
         },
         {
             id: "kPai4Wv5oCE",

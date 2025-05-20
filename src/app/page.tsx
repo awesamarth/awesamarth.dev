@@ -11,7 +11,7 @@ import { getLanguageColor } from "@/utils";
 import { useAccount, useReadContract } from 'wagmi'
 import { useTheme } from 'next-themes';
 import { useRouter } from "next/navigation"
-import { ABI, LOCAL_DOOMGOAT_ADDRESS, LOCAL_GOAT_ADDRESS, MEGA_DOOMGOAT_ADDRESS, MEGA_GOAT_ADDRESS} from "@/constants";
+import { ABI, LOCAL_DOOMGOAT_ADDRESS, LOCAL_GOAT_ADDRESS, MEGA_DOOMGOAT_ADDRESS, MEGA_GOAT_ADDRESS } from "@/constants";
 import { foundry } from "viem/chains";
 
 
@@ -57,19 +57,18 @@ export default function Home() {
 
   const initialAlreaadyMinted = useReadContract({
     abi: ABI,
-    address: theme==="doom"?MEGA_DOOMGOAT_ADDRESS:MEGA_GOAT_ADDRESS,
+    address: theme === "doom" ? MEGA_DOOMGOAT_ADDRESS : MEGA_GOAT_ADDRESS,
     functionName: 'hasMinted',
-    args:[address]
+    args: [address]
   })
 
-  console.log(initialAlreaadyMinted.data)
 
   useEffect(() => {
 
     if (initialAlreaadyMinted?.data === true) {
       setAlreadyMinted(true);
     }
-    else{
+    else {
       setAlreadyMinted(false)
     }
   }, [initialAlreaadyMinted?.data, theme]);
@@ -173,14 +172,13 @@ export default function Home() {
       });
 
       const data = await response.json();
-      console.log(data);
 
       if (!response.ok) {
 
-        console.log("here's the error: ", data.error)
+        // console.log("here's the error: ", data.error)
         // Check if it's the "already minted" error
         if (data.error && data.error.includes('already minted')) {
-          console.log("yes already minted")
+          // console.log("yes already minted")
           setAlreadyMinted(true);
           throw new Error('You have already minted an NFT!');
         }
@@ -262,35 +260,32 @@ export default function Home() {
         });
       }
     }
-    async function fetchLatestCast() {
-      try {
-        const response = await fetch(
-          'https://nemes.farcaster.xyz:2281/v1/castsByFid?fid=848743&pageSize=1&reverse=1'
-        );
+async function fetchLatestCast() {
+  try {
+    const response = await fetch('/api/warpcast');
+    const data = await response.json();
 
-        const json = await response.json();
-
-        if (!json.messages || json.messages.length === 0) {
-          throw new Error('No casts found');
-        }
-
-        const castData = json.messages[0].data;
-        const castHash = json.messages[0].hash;
-
-        setLatestCast({
-          text: castData.castAddBody.text,
-          timestamp: castData.timestamp,
-          url: `https://warpcast.com/awesamarth/${castHash}`
-        });
-      } catch (error) {
-        console.error('Error fetching Farcaster cast:', error);
-        setLatestCast({
-          text: "Check out my latest projects and updates on my portfolio site!",
-          timestamp: 0,
-          url: "https://warpcast.com/awesamarth"
-        });
-      }
+    if (!data.messages || data.messages.length === 0) {
+      throw new Error('No casts found');
     }
+
+    const castData = data.messages[0].data;
+    const castHash = data.messages[0].hash;
+
+    setLatestCast({
+      text: castData.castAddBody.text,
+      timestamp: castData.timestamp,
+      url: `https://warpcast.com/awesamarth/${castHash}`
+    });
+  } catch (error) {
+    console.log('Farcaster Hub endpoint down. Displaying placeholder cast instead', error);
+    setLatestCast({
+      text: "Check out my latest projects and updates on my portfolio site!",
+      timestamp: 0,
+      url: "https://warpcast.com/awesamarth"
+    });
+  }
+}
 
 
 
