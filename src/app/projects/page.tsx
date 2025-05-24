@@ -27,7 +27,7 @@ export default function Projects() {
     async function fetchRepositories() {
       try {
         // Fetch more repositories, sorted by most recently updated
-        const response = await fetch('https://api.github.com/users/awesamarth/repos?sort=updated&per_page=10');
+        const response = await fetch('https://api.github.com/users/awesamarth/repos?sort=pushed&per_page=10');
         if (!response.ok) {
           throw new Error('Failed to fetch repositories');
         }

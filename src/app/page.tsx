@@ -49,7 +49,8 @@ export default function Home() {
   const [alreadyMinted, setAlreadyMinted] = useState(false);
 
   const { address } = useAccount()
-  const specificRepos = ["mega-cli", "croc-ai", "gambit", "morphide"];
+  const specificRepos = ["blaze-arcade", "mega-cli", "croc-ai", "gambit"];
+  //removed morhpide (at least for now)
   const router = useRouter()
 
   const { theme } = useTheme();
