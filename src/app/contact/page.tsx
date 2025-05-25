@@ -35,6 +35,29 @@ export default function Contact() {
                 </Link>
               </div>
 
+              
+              <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="relative h-6 w-6">
+                    <Image
+                      src="/telegram-logo.png"
+                      alt="Telegram Logo"
+                      fill
+                      className="object-contain telegram-logo"
+                    />
+                  </div>
+                  <span className="font-medium">Telegram:</span>
+                </div>
+                <Link
+                  href="https://t.me/awesamarth"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="hover:underline"
+                >
+                  @awesamarth
+                </Link>
+              </div>
+
               <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
                 <div className="flex items-center gap-3">
                   <div className="relative h-6 w-6">
@@ -72,7 +95,7 @@ export default function Contact() {
                   <span className="font-medium">Farcaster:</span>
                 </div>
                 <Link
-                  href="https://warpcast.com/awesamarth"
+                  href="https://farcaster.xyz/awesamarth"
                   target="_blank"
                   rel="noreferrer noopener"
                   className="hover:underline"
@@ -80,6 +103,7 @@ export default function Contact() {
                   @awesamarth
                 </Link>
               </div>
+
 
               <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
                 <div className="flex items-center gap-3">

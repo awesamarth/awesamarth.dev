@@ -43,6 +43,8 @@
   --radius-xl: calc(var(--radius) + 4px);
   --color-twitter: #000000;
   --color-farcaster: #855DCD;
+  --color-telegram: #0088cc;  /* Add this line */
+
   --color-github: #333333;
   --color-email: #EA4335;
   --color-linkedin: #0A66C2;
@@ -133,6 +135,7 @@ html {
   --color-github: #111111;
   --color-email: #ff3c00;
   --color-linkedin: #0A66C2;
+  --color-telegram: #0088cc;  /* Add this line */
   --x-logo-filter: none;
 
   

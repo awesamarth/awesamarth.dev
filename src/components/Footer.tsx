@@ -1,6 +1,6 @@
 'use client'
 
-import { GithubIcon, Linkedin, LinkedinIcon, LucideLinkedin, MailIcon, TwitterIcon } from 'lucide-react';
+import { GithubIcon, Linkedin, LinkedinIcon, LucideLinkedin, MailIcon, TwitterIcon, Send } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
@@ -14,21 +14,21 @@ export function Footer() {
       <Link
         target="_blank" rel="noreferrer noopener"
         href="https://github.com/awesamarth"
-        className="flex h-10 w-10 items-center justify-center rounded-md p-1 transition-all hover:bg-accent"
+        className="flex h-10 w-10 items-center justify-center rounded-md p-1 transition-all hover:bg-gray-200 dark:hover:bg-accent"
       >
-        <GithubIcon className={`h-5 w-5 ${theme=="light"?"fill-white stroke-github":"fill-white stroke-white"} fill-github stroke-github`} />
+        <GithubIcon className={`h-5 w-5 ${theme == "light" ? "fill-white stroke-github" : "fill-white stroke-white"} fill-github stroke-github`} />
       </Link>
 
       <Link
         target="_blank" rel="noreferrer noopener"
         href="https://twitter.com/awesamarth_"
-        className="flex h-10 w-10 items-center justify-center rounded-md p-1 transition-all hover:bg-accent"
+        className="flex h-10 w-10 items-center justify-center rounded-md p-1 transition-all hover:bg-gray-200 dark:hover:bg-accent"
       >
         <div className="relative h-5 w-5">
-          <Image 
-            src="/xlogo.png" 
-            alt="X Logo" 
-            fill 
+          <Image
+            src="/xlogo.png"
+            alt="X Logo"
+            fill
             className={`object-contain x-logo
               `}
           />
@@ -39,8 +39,8 @@ export function Footer() {
 
       <Link
         target="_blank" rel="noreferrer noopener"
-        href="https://warpcast.com/awesamarth"
-        className="flex h-10 w-10 items-center justify-center rounded-md p-1 transition-all hover:bg-accent"
+        href="https://farcaster.xyz/awesamarth"
+        className="flex h-10 w-10 items-center justify-center rounded-md p-1 transition-all hover:bg-gray-200 dark:hover:bg-accent"
       >
         <svg
           className="h-6 w-6"
@@ -65,17 +65,41 @@ export function Footer() {
       </Link>
 
       <Link
-        target="_blank" rel="noreferrer noopener"
+        target="_blank"
+        rel="noreferrer noopener"
         href="https://linkedin.com/in/awesamarth"
-        className="flex h-10 w-10 items-center justify-center rounded-md p-1 transition-all hover:bg-accent"
+        className="flex h-10 w-10 items-center justify-center rounded-md p-1 transition-all hover:bg-gray-200 dark:hover:bg-accent"
       >
-        < LucideLinkedin className="h-5 w-5 fill-linkedin stroke-linkedin" />
+        <div className="relative h-5 w-5">
+          <Image
+            src="/linkedin-logo.png"
+            alt="LinkedIn Logo"
+            fill
+            className="object-contain linkedin-logo"
+          />
+        </div>
+      </Link>
+
+      <Link
+        target="_blank"
+        rel="noreferrer noopener"
+        href="https://t.me/awesamarth"
+        className="flex h-10 w-10 items-center justify-center rounded-md p-1 transition-all hover:bg-gray-200 dark:hover:bg-accent"
+      >
+        <div className="relative h-5 w-5">
+          <Image
+            src="/telegram-logo.png"
+            alt="Telegram Logo"
+            fill
+            className="object-contain telegram-logo"
+          />
+        </div>
       </Link>
 
       <Link
         target="_blank" rel="noreferrer noopener"
         href="mailto:samarthsaxena1672003@gmail.com"
-        className="flex h-10 w-10 items-center justify-center rounded-md p-1 transition-all hover:bg-accent"
+        className="flex h-10 w-10 items-center justify-center rounded-md p-1 transition-all hover:bg-gray-200 dark:hover:bg-accent"
       >
         <MailIcon className="h-5 w-5 fill-email stroke-accent" />
       </Link>

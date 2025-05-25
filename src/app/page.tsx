@@ -263,7 +263,7 @@ export default function Home() {
     }
 async function fetchLatestCast() {
   try {
-    const response = await fetch('/api/warpcast');
+    const response = await fetch('/api/farcaster');
     const data = await response.json();
 
     if (!data.messages || data.messages.length === 0) {
@@ -276,14 +276,14 @@ async function fetchLatestCast() {
     setLatestCast({
       text: castData.castAddBody.text,
       timestamp: castData.timestamp,
-      url: `https://warpcast.com/awesamarth/${castHash}`
+      url: `https://farcaster.xyz/awesamarth/${castHash}`
     });
   } catch (error) {
     console.log('Farcaster Hub endpoint down. Displaying placeholder cast instead', error);
     setLatestCast({
       text: "Check out my latest projects and updates on my portfolio site!",
       timestamp: 0,
-      url: "https://warpcast.com/awesamarth"
+      url: "https://farcaster.xyz/awesamarth"
     });
   }
 }
@@ -372,7 +372,7 @@ async function fetchLatestCast() {
               ) : (
                 <>
                   <Link
-                    href={latestCast?.url || "https://warpcast.com/awesamarth"}
+                    href={latestCast?.url || "https://farcaster.xyz/awesamarth"}
                     target="_blank"
                     rel="noreferrer noopener"
                     className="hover:underline"
