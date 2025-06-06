@@ -283,7 +283,7 @@ export default function Home() {
         setLatestCast({
           text: castData.text || "Check out my latest updates!",
           timestamp: latestMessage.data.timestamp,
-          url: `https://warpcast.com/awesamarth/${latestMessage.hash.substring(2, 12)}`
+          url: `https://farcaster.xyz/awesamarth/${latestMessage.hash.substring(0, 10)}`
         });
 
       } catch (error) {
@@ -291,7 +291,7 @@ export default function Home() {
         setLatestCast({
           text: "Check out my latest projects and updates on my portfolio site!",
           timestamp: Date.now(),
-          url: "https://warpcast.com/awesamarth"
+          url: "https://farcast.xyz/awesamarth"
         });
       }
     }
