@@ -261,33 +261,40 @@ export default function Home() {
         });
       }
     }
-async function fetchLatestCast() {
-  try {
-    const response = await fetch('/api/farcaster');
-    const data = await response.json();
+    async function fetchLatestCast() {
+      try {
+        const response = await fetch('/api/farcaster');
 
-    if (!data.messages || data.messages.length === 0) {
-      throw new Error('No casts found');
+        if (!response.ok) {
+          throw new Error(`API failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Look for 'messages' not 'casts' 
+        if (!data.messages || data.messages.length === 0) {
+          throw new Error('No casts found');
+        }
+
+        // Get your one and only cast
+        const latestMessage = data.messages[0];
+        const castData = latestMessage.data.castAddBody;
+
+        setLatestCast({
+          text: castData.text || "Check out my latest updates!",
+          timestamp: latestMessage.data.timestamp,
+          url: `https://warpcast.com/awesamarth/${latestMessage.hash.substring(2, 12)}`
+        });
+
+      } catch (error) {
+        console.log('Failed to fetch Farcaster data, using fallback:', error);
+        setLatestCast({
+          text: "Check out my latest projects and updates on my portfolio site!",
+          timestamp: Date.now(),
+          url: "https://warpcast.com/awesamarth"
+        });
+      }
     }
-
-    const castData = data.messages[0].data;
-    const castHash = data.messages[0].hash;
-
-    setLatestCast({
-      text: castData.castAddBody.text,
-      timestamp: castData.timestamp,
-      url: `https://farcaster.xyz/awesamarth/${castHash}`
-    });
-  } catch (error) {
-    console.log('Farcaster Hub endpoint down. Displaying placeholder cast instead', error);
-    setLatestCast({
-      text: "Check out my latest projects and updates on my portfolio site!",
-      timestamp: 0,
-      url: "https://farcaster.xyz/awesamarth"
-    });
-  }
-}
-
 
 
     Promise.all([fetchGithubCommit(), fetchLatestCast(), fetchRepositories()])
