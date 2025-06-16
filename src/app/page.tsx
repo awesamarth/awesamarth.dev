@@ -149,12 +149,7 @@ export default function Home() {
     }
   }
 
-  function formatFarcasterTimestamp(timestamp: number): string {
-    // Farcaster timestamps count seconds from Jan 1, 2021 00:00:00 UTC
-    const farcasterEpochStart = new Date('2021-01-01T00:00:00Z').getTime();
-    const date = new Date(farcasterEpochStart + (timestamp * 1000));
-    return date.toLocaleDateString();
-  }
+
 
   const mintNFT = async () => {
     if (!address) return;
@@ -261,43 +256,10 @@ export default function Home() {
         });
       }
     }
-    async function fetchLatestCast() {
-      try {
-        const response = await fetch('/api/farcaster');
-
-        if (!response.ok) {
-          throw new Error(`API failed: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        // Look for 'messages' not 'casts' 
-        if (!data.messages || data.messages.length === 0) {
-          throw new Error('No casts found');
-        }
-
-        // Get your one and only cast
-        const latestMessage = data.messages[0];
-        const castData = latestMessage.data.castAddBody;
-
-        setLatestCast({
-          text: castData.text || "Check out my latest updates!",
-          timestamp: latestMessage.data.timestamp,
-          url: `https://farcaster.xyz/awesamarth/${latestMessage.hash.substring(0, 10)}`
-        });
-
-      } catch (error) {
-        console.log('Failed to fetch Farcaster data, using fallback:', error);
-        setLatestCast({
-          text: "Check out my latest projects and updates on my portfolio site!",
-          timestamp: Date.now(),
-          url: "https://farcast.xyz/awesamarth"
-        });
-      }
-    }
 
 
-    Promise.all([fetchGithubCommit(), fetchLatestCast(), fetchRepositories()])
+
+    Promise.all([fetchGithubCommit(), fetchRepositories()])
       .finally(() => setIsLoading(false));
 
   }, []);
@@ -379,17 +341,17 @@ export default function Home() {
               ) : (
                 <>
                   <Link
-                    href={latestCast?.url || "https://farcaster.xyz/awesamarth"}
+                    href="https://farcaster.xyz/awesamarth/0x002d5183"
                     target="_blank"
                     rel="noreferrer noopener"
                     className="hover:underline"
                   >
                     <p className="text-muted-foreground">
-                      {latestCast?.text || "Check out my latest projects and updates on my portfolio site!"}
+                      i hate farcaster
                     </p>
                   </Link>
                   <p className="text-sm text-muted-foreground mt-4">
-                    {latestCast?.timestamp ? `on ${formatFarcasterTimestamp(latestCast.timestamp)}` : "recently"}
+                    on 6/6/2025
                   </p>
                 </>
               )}
