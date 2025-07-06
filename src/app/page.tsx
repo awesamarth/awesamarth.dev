@@ -49,7 +49,7 @@ export default function Home() {
   const [alreadyMinted, setAlreadyMinted] = useState(false);
 
   const { address } = useAccount()
-  const specificRepos = ["blaze-arcade", "mega-cli", "croc-ai", "gambit"];
+  const specificRepos = ["blaze-arcade", "mega-cli", "ten-survival-lite", "croc-ai", "gambit", "bull-market-battletest"];
   //removed morhpide (at least for now)
   const router = useRouter()
 
@@ -80,7 +80,7 @@ export default function Home() {
       let fetchedRepos: Repository[] = [];
 
       // Fetch all repositories to filter for the specific ones
-      const response = await fetch('https://api.github.com/users/awesamarth/repos?per_page=100');
+      const response = await fetch('https://api.github.com/users/awesamarth/repos?per_page=100&sort=updated&direction=desc');
       if (!response.ok) {
         throw new Error('Failed to fetch repositories');
       }

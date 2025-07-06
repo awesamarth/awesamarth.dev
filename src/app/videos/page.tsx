@@ -16,6 +16,24 @@ export default function Videos() {
     const specificVideos: Video[] = [
 
         {
+            id: "sHdCdAUCF0o",
+            title: "TEN Survival: Russian Roulette style game on TEN Testnet",
+            description: "This video is a demo of TEN Survival- a Russian Roulette style game powered by TEN protocol's secure and private randomness"
+        },
+
+        {
+            id: "ePOsRN4BsAI",
+            title: "How to Build “Signatureless” dApp Experiences",
+            description: "This video shows how you can use Privy embedded wallets to enable virtually signatureless transactions in your dApps."
+        },
+
+        {
+            id: "BfpEpmIN2xA",
+            title: "Realtime Endpoints for Superfast Ethereum L2s",
+            description: "This video explains custom realtime rpc methods used by MegaETH, RISE and Abstract. "
+        },
+
+        {
             id: "0ktNilzUN40",
             title: "How to Generate your First Proof on Succinct Network",
             description: "This video is a dev tutorial showing you how you can generate your first proof on Succinct Network. Zero to Dev: Episode 1."
@@ -41,21 +59,21 @@ export default function Videos() {
             title: "Croc AI: Your friendly neighbourhood browser assistant",
             description: "Croc AI is a sidebar-by-default extension that uses in-browser Gemini Nano to transform Chrome into an intelligent companion."
         },
-        {
-            id: "P6sJeB_Ghbw",
-            title: "MorphIDE: AI-powered online IDE built for Morph (Sepolia)",
-            description: "MorphIDE (Morph + IDE) is an AI-powered online IDE that can generate smart contracts using AI and can also answer doubts about the Morph blockchain."
-        },
+        // {
+        //     id: "P6sJeB_Ghbw",
+        //     title: "MorphIDE: AI-powered online IDE built for Morph (Sepolia)",
+        //     description: "MorphIDE (Morph + IDE) is an AI-powered online IDE that can generate smart contracts using AI and can also answer doubts about the Morph blockchain."
+        // },
         {
             id: "BFkGr0LqSYc",
             title: "Gambit: Chess on the blockchain",
             description: "Gambit is a game which combines authentic and pure chess gameplay with crypto wagering facilities. There are 4 game modes: Ranked, Unranked, Arena and Private."
         },
-        {
-            id: "Ehfui0_DGbg",
-            title: "Can you be trusted with your own crypto? | Bull Market Battletest",
-            description: "Bull Market Battletest is a browser-based game that interactively teaches people about security in the crypto world."
-        },
+        // {
+        //     id: "Ehfui0_DGbg",
+        //     title: "Can you be trusted with your own crypto? | Bull Market Battletest",
+        //     description: "Bull Market Battletest is a browser-based game that interactively teaches people about security in the crypto world."
+        // },
 
     ];
 
