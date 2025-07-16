@@ -281,7 +281,7 @@ export default function Home() {
                 Hey, I'm Samarth!
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl mb-4">
-                I am a 21 year old Full-Stack dev, Smart Contract dev and DevRel from India. I am extremely curious and on a
+                I am a 23 year old Full-Stack dev, Smart Contract dev and DevRel from India. I am extremely curious and on a
                 pursuit of knowledge. I believe that being sincere is much more important than being serious.
               </p>
 
