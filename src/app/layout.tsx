@@ -8,8 +8,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import ContextProvider from "@/context";
-import { useAppKitTheme } from "@reown/appkit/react";
-import { useTheme } from "next-themes";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

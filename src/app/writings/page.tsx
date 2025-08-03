@@ -23,9 +23,6 @@ export default function Writings() {
     useEffect(() => {
         async function fetchBlogPosts() {
             try {
-                // In a real implementation, you would make an API call to your backend
-                // which would then securely fetch from the Hashnode GraphQL API
-                // For now, we'll use a mock implementation or fetch directly if CORS allows
 
                 const query = `
           query Publication {
@@ -64,8 +61,9 @@ export default function Writings() {
                 const data = await response.json();
                 const posts = data.data.publication.posts.edges.map((edge: any) => edge.node);
 
-                // Get first 5 posts
-                setBlogPosts(posts.slice(0, 6));
+                // Filter posts that have cover images, then get first 5
+                const postsWithImages = posts.filter((post: any) => post.coverImage?.url);
+                setBlogPosts(postsWithImages.slice(0, 5));
             } catch (error) {
                 console.error('Error fetching blog posts:', error);
                 // Fallback data if API fails
@@ -151,7 +149,7 @@ export default function Writings() {
                     <div className="my-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                         {isLoading ? (
                             // Loading skeletons
-                            Array(6).fill(0).map((_, i) => (
+                            Array(5).fill(0).map((_, i) => (
                                 <div key={i} className="rounded-lg border p-6 bg-card animate-pulse">
                                     <div className="h-48 bg-muted rounded-lg mb-4"></div>
                                     <div className="h-6 bg-muted rounded w-3/4 mb-3"></div>
