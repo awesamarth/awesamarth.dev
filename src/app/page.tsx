@@ -199,49 +199,36 @@ export default function Home() {
   useEffect(() => {
     async function fetchGithubCommit() {
       try {
-        // Using GitHub API to fetch the latest commit
-        const response = await fetch('https://api.github.com/users/awesamarth/events/public');
-        const data = await response.json();
+        // Fetch events to find the most recent PushEvent
+        const eventsResponse = await fetch('https://api.github.com/users/awesamarth/events/public');
+        const events = await eventsResponse.json();
 
-        // Define more specific type for GitHub events
         type GithubEvent = {
           type: string;
-          payload: any;
           repo: {
             name: string;
           };
           created_at: string;
         };
 
-        // Find the first push event or create event
-        const relevantEvent = data.find((event: GithubEvent) =>
-          event.type === 'PushEvent' ||
-          (event.type === 'CreateEvent' && event.payload.ref_type === 'repository')
-        );
+        // Find the most recent PushEvent
+        const pushEvent = events.find((event: GithubEvent) => event.type === 'PushEvent');
 
-        if (relevantEvent) {
-          if (relevantEvent.type === 'PushEvent') {
-            // Handle Push Event
-            const commit = relevantEvent.payload.commits[0];
-            const repoName = relevantEvent.repo.name.split('/')[1];
-            const repoFullName = relevantEvent.repo.name;
+        if (pushEvent) {
+          const repoFullName = pushEvent.repo.name;
+          const repoName = repoFullName.split('/')[1];
 
+          // Fetch the latest commit from that repo
+          const commitResponse = await fetch(`https://api.github.com/repos/${repoFullName}/commits?per_page=1`);
+          const commitData = await commitResponse.json();
+
+          if (commitData && commitData.length > 0) {
+            const latestCommit = commitData[0];
             setLatestCommit({
               repo: repoName,
-              message: commit.message,
-              date: new Date(relevantEvent.created_at).toLocaleDateString(),
-              url: `https://github.com/${repoFullName}/commit/${commit.sha}`
-            });
-          } else if (relevantEvent.type === 'CreateEvent') {
-            // Handle Create Event
-            const repoName = relevantEvent.repo.name.split('/')[1];
-            const repoFullName = relevantEvent.repo.name;
-
-            setLatestCommit({
-              repo: repoName,
-              message: `Created new repository`,
-              date: new Date(relevantEvent.created_at).toLocaleDateString(),
-              url: `https://github.com/${repoFullName}`
+              message: latestCommit.commit.message,
+              date: new Date(latestCommit.commit.author.date).toLocaleDateString(),
+              url: latestCommit.html_url
             });
           }
         }
@@ -314,8 +301,8 @@ export default function Home() {
                     rel="noreferrer noopener"
                     className="hover:underline"
                   >
-                    <h3 className="font-medium">{latestCommit?.repo || "Repository"}</h3>
-                    <p className="text-muted-foreground">{latestCommit?.message || "Commit message"}</p>
+                    <h3 className="font-medium">{latestCommit?.repo || "github-repo"}</h3>
+                    <p className="text-muted-foreground">{latestCommit?.message || "Recent commit message"}</p>
                   </Link>
                   <p className="text-sm text-muted-foreground mt-4">on {latestCommit?.date || "recent date"}</p>
                 </>
