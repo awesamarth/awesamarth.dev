@@ -211,11 +211,11 @@ export default function Home() {
           created_at: string;
         };
 
-        // Find the most recent PushEvent
-        const pushEvent = events.find((event: GithubEvent) => event.type === 'PushEvent');
+        // Find the most recent PushEvent or CreateEvent (new repo creation)
+        const relevantEvent = events.find((event: GithubEvent) => event.type === 'PushEvent' || event.type === 'CreateEvent');
 
-        if (pushEvent) {
-          const repoFullName = pushEvent.repo.name;
+        if (relevantEvent) {
+          const repoFullName = relevantEvent.repo.name;
           const repoName = repoFullName.split('/')[1];
 
           // Fetch the latest commit from that repo
