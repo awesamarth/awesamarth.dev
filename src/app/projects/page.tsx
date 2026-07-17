@@ -70,7 +70,7 @@ export default function Projects() {
       </Head>
 
       <div className="min-h-screen bg-background dark:bg-[#191919] text-foreground">
-        <main className="max-w-screen-2xl mx-auto py-12 px-4 sm:px-6 md:px-20">
+        <main className="max-w-screen-2xl mx-auto py-12 px-4 sm:px-6 md:px-20 2xl:px-28">
           <div className="pt-20 pb-6">
             <h1 className="text-4xl font-bold mb-4">Projects</h1>
             <p className="text-lg text-muted-foreground max-w-3xl">

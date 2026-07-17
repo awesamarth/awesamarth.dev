@@ -30,19 +30,14 @@ export default function ThankYou() {
         return null;
     }
 
-    function getRaribleUrl(){
-        if (isDoom){
-            return `https://testnet.rarible.fun/items/megaethtestnet/${MEGA_DOOMGOAT_ADDRESS}:${tokenId}`
-        }
-
-        else{
-            return `https://testnet.rarible.fun/items/megaethtestnet/${MEGA_GOAT_ADDRESS}:${tokenId}`
-        }
+    function getNftExplorerUrl() {
+        const contractAddress = isDoom ? MEGA_DOOMGOAT_ADDRESS : MEGA_GOAT_ADDRESS;
+        return `https://testnet-mega.etherscan.io/nft/${contractAddress}/${tokenId}`;
     }
 
     return (
         <div className="min-h-screen bg-background dark:bg-[#191919] text-foreground">
-            <main className="container py-12 px-20">
+            <main className="mx-auto w-full max-w-screen-2xl py-12 px-4 sm:px-6 md:px-20 2xl:px-28">
                 <div className="pt-20 pb-12 flex flex-col items-center">
                     <div className="bg-card border rounded-lg p-6 max-w-lg w-full">
                         <h1 className="text-3xl font-bold mb-6 text-center">
@@ -53,7 +48,7 @@ export default function ThankYou() {
                         </h1>
 
                         <div className="relative w-full h-64 mb-6 rounded-md overflow-hidden border group">
-                            <Link href={getRaribleUrl()}>
+                            <Link href={getNftExplorerUrl()} target="_blank" rel="noreferrer noopener">
                                 <div className="relative w-full h-full">
                                     <Image
                                         src={isDoom ? '/doom-nft.jpg' : '/regular-nft.jpg'}
@@ -62,10 +57,9 @@ export default function ThankYou() {
                                         className="object-cover"
                                         priority
                                     />
-                                    {/* Overlay with View on Rarible text */}
                                     <div className={`absolute inset-0 ${isDoom?"bg-black/70":"bg-black/80"} flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
                                         <div className="flex flex-col items-center space-y-2">
-                                            <span className="text-pink-500 font-bold text-lg ">View on Rarible</span>
+                                            <span className="text-pink-500 font-bold text-lg ">View on Etherscan</span>
                                         </div>
                                     </div>
                                 </div>
@@ -77,12 +71,12 @@ export default function ThankYou() {
                             <p className="text-lg">
                                 <span className="font-medium">Transaction:</span>{' '}
                                 <Link
-                                    href={`https://www.megaexplorer.xyz/tx/${txHash}`}
+                                    href={`https://testnet-mega.etherscan.io/tx/${txHash}`}
                                     target="_blank"
                                     rel="noreferrer noopener"
                                     className="text-primary hover:underline"
                                 >
-                                    View on MegaExplorer
+                                    View on Etherscan
                                 </Link>
                             </p>
                         </div>

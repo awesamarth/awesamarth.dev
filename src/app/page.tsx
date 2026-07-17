@@ -11,8 +11,7 @@ import { getLanguageColor } from "@/utils";
 import { useAccount, useReadContract } from 'wagmi'
 import { useTheme } from 'next-themes';
 import { useRouter } from "next/navigation"
-import { ABI, LOCAL_DOOMGOAT_ADDRESS, LOCAL_GOAT_ADDRESS, MEGA_DOOMGOAT_ADDRESS, MEGA_GOAT_ADDRESS } from "@/constants";
-import { foundry } from "viem/chains";
+import { ABI, MEGA_DOOMGOAT_ADDRESS, MEGA_GOAT_ADDRESS } from "@/constants";
 
 
 
@@ -24,13 +23,6 @@ export default function Home() {
     url: string; // Added URL field for the repo link
   };
 
-  type Cast = {
-    text: string;
-    timestamp: number;
-    url: string;
-  };
-
-
   type Repository = {
     name: string;
     description: string;
@@ -41,7 +33,6 @@ export default function Home() {
   };
 
   const [latestCommit, setLatestCommit] = useState<GithubCommit | null>(null);
-  const [latestCast, setLatestCast] = useState<Cast | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [isMinting, setIsMinting] = useState(false);
@@ -49,8 +40,32 @@ export default function Home() {
   const [alreadyMinted, setAlreadyMinted] = useState(false);
 
   const { address } = useAccount()
-  const specificRepos = ["blaze-arcade", "mega-cli", "ten-survival-lite", "croc-ai", "gambit", "bull-market-battletest"];
-  //removed morhpide (at least for now)
+  const featuredRepos = [
+    {
+      name: "agentis",
+      description: "Complete financial infrastructure for AI agents on Solana",
+    },
+    {
+      name: "ronin",
+      description: "Agentic solutions engineer for protocol teams and enterprises",
+    },
+    {
+      name: "watchdog",
+      description: "Local operator control plane for agentic loops and subagents",
+    },
+    {
+      name: "hazmat",
+      description: "Local exposure scanner, reporter, and scrubber for AI coding-agent transcripts",
+    },
+    {
+      name: "croc-ai",
+      description: "Your friendly neighbourhood browser assistant",
+    },
+    {
+      name: "mega-cli",
+      description: "A CLI toolkit for MegaETH developers and users",
+    },
+  ];
   const router = useRouter()
 
   const { theme } = useTheme();
@@ -88,12 +103,12 @@ export default function Home() {
       const data = await response.json();
 
       // Filter to only include the specific repositories we want
-      specificRepos.forEach(repoName => {
-        const repo = data.find((r: any) => r.name === repoName);
+      featuredRepos.forEach(featuredRepo => {
+        const repo = data.find((r: any) => r.name === featuredRepo.name);
         if (repo) {
           fetchedRepos.push({
             name: repo.name,
-            description: repo.description || 'No description available',
+            description: featuredRepo.description,
             language: repo.language || 'Unknown',
             updated_at: new Date(repo.updated_at).toLocaleDateString(),
             html_url: repo.html_url,
@@ -102,50 +117,21 @@ export default function Home() {
         }
       });
 
-      // If any specified repos weren't found, we could add fallbacks
-      if (fetchedRepos.length < specificRepos.length) {
+      if (fetchedRepos.length < featuredRepos.length) {
         console.warn("Some specified repositories were not found");
       }
 
       setRepositories(fetchedRepos);
     } catch (error) {
       console.error('Error fetching repositories:', error);
-      // Set fallback repos with the exact names you want
-      setRepositories([
-        {
-          name: "mega-cli",
-          description: "A sick CLI tool for MegaETH users and devs",
-          language: "TypeScript",
-          updated_at: "29 Mar 2025",
-          html_url: "https://github.com/awesamarth/mega-cli",
-          language_color: "#3178c6"
-        },
-        {
-          name: "gambit",
-          description: "Chess on the blockchain",
-          language: "TypeScript",
-          updated_at: "17 Mar 2025",
-          html_url: "https://github.com/awesamarth/gambit",
-          language_color: "#3178c6"
-        },
-
-        {
-          name: "croc-ai",
-          description: "Your friendly neighbourhood browser assistant",
-          language: "TypeScript",
-          updated_at: "1 Feb 2025",
-          html_url: "https://github.com/awesamarth/croc-ai",
-          language_color: "#3178c6"
-        },
-        {
-          name: "morphide",
-          description: "AI powered online IDE built with a special focus on Morph",
-          language: "TypeScript",
-          updated_at: "27 Apr 2024",
-          html_url: "https://github.com/awesamarth/morphide",
-          language_color: "#3178c6"
-        }
-      ]);
+      setRepositories(featuredRepos.map(repo => ({
+        name: repo.name,
+        description: repo.description,
+        language: "TypeScript",
+        updated_at: "Recently",
+        html_url: `https://github.com/awesamarth/${repo.name}`,
+        language_color: "#3178c6"
+      })));
     }
   }
 
@@ -260,7 +246,7 @@ export default function Home() {
       </Head>
 
       <div className="min-h-screen bg-background dark:bg-[#191919] text-foreground">
-        <main className="max-w-screen-2xl mx-auto py-12 px-4 sm:px-6 md:px-20">
+        <main className="max-w-screen-2xl mx-auto py-12 px-4 sm:px-6 md:px-20 2xl:px-28">
           {/* Hero Section */}
           <div className="flex flex-col-reverse md:flex-row items-center justify-between pt-24 pb-2 gap-8">
             <div className="max-w-4xl">
@@ -268,7 +254,7 @@ export default function Home() {
                 Hey, I'm Samarth!
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl mb-4">
-                I am a 22 year old Full-Stack dev, Smart Contract dev and DevRel from India. I am extremely curious and on a
+                I am a 23 year old Full-Stack dev, Smart Contract dev and DevRel from India. I am extremely curious and on a
                 pursuit of knowledge. I believe that being sincere is much more important than being serious.
               </p>
 
@@ -285,8 +271,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Latest Commit and Tweet Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-12">
+          {/* Latest Commit Section */}
+          <div className="my-12">
             <div className="rounded-lg border p-6 bg-card">
               <h2 className="flex items-center gap-2 text-xl font-semibold mb-4">
                 <GithubIcon className="fill-current" /> Latest Public Commit
@@ -309,41 +295,86 @@ export default function Home() {
               )}
             </div>
 
-            <div className="rounded-lg border p-6 bg-card">
-              <h2 className="flex items-center gap-2 text-xl font-semibold mb-4">
-                <svg
-                  className="h-6 w-6 fill-farcaster"
-                  aria-hidden="true"
-                  viewBox="0 0 225 225"
-                >
-                  <rect width="225" height="225" rx="50" fill="none"></rect>
-                  <path d="M58 35H167V190H151V119H150.843C149.075 99.3773 132.583 84 112.5 84C92.4169 84 75.9253 99.3773 74.157 119H74V190H58V35Z"></path>
-                  <path d="M29 57L35.5 79H41V168C38.2386 168 36 170.239 36 173V179H35C32.2386 179 30 181.239 30 184V190H86V184C86 181.239 83.7614 179 81 179H80V173C80 170.239 77.7614 168 75 168H69V57H29Z"></path>
-                  <path d="M152 168C149.239 168 147 170.239 147 173V179H146C143.239 179 141 181.239 141 184V190H197V184C197 181.239 194.761 179 192 179H191V173C191 170.239 188.761 168 186 168V79H191.5L198 57H158V168H152Z"></path>
-                </svg>
-                Latest Cast
-              </h2>
-              {isLoading ? (
-                <p className="text-muted-foreground">Loading...</p>
-              ) : (
-                <>
-                  <Link
-                    href="https://farcaster.xyz/awesamarth/0x002d5183"
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="hover:underline"
-                  >
-                    <p className="text-muted-foreground">
-                      i hate farcaster
-                    </p>
-                  </Link>
-                  <p className="text-sm text-muted-foreground mt-4">
-                    on 6/6/2025
-                  </p>
-                </>
-              )}
-            </div>
           </div>
+
+          {/* Experience Section */}
+          <section className="mb-12 mt-20">
+            <h2 className="text-2xl font-bold mb-8">Experience</h2>
+
+            <div className="space-y-0">
+              <Link
+                href="https://risechain.com"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="group grid cursor-pointer grid-cols-[5.5rem_1.25rem_1fr] gap-x-3 sm:grid-cols-[7rem_1.5rem_1fr] sm:gap-x-4"
+              >
+                <div className="pt-1 text-sm sm:text-base font-mono text-muted-foreground leading-6">
+                  <div>Mar 2026</div>
+                  <div>Oct 2025</div>
+                </div>
+
+                <div className="relative flex justify-center">
+                  <span className="relative z-10 mt-2 h-2.5 w-2.5 rounded-full bg-muted-foreground transition-colors group-hover:bg-foreground" />
+                  <span className="absolute top-5 bottom-0 border-l border-dashed border-muted-foreground/70" />
+                </div>
+
+                <div className="pb-10">
+                  <div className="mb-3 flex items-center gap-3">
+                    <Image
+                      src="/rise-logo.png"
+                      alt="RISE Chain logo"
+                      width={32}
+                      height={32}
+                      className="h-8 w-8 rounded-full object-cover grayscale transition-all duration-300 group-hover:grayscale-0"
+                    />
+                    <h3 className="text-lg font-semibold">
+                      RISE Chain <span className="mx-1 text-muted-foreground">•</span>{" "}
+                      <span className="text-muted-foreground">Full-Stack Developer Relations Engineer</span>
+                    </h3>
+                  </div>
+                  <p className="max-w-4xl text-muted-foreground">
+                    Worked on the product team across developer tooling, docs, ecosystem projects, the RISE Shreds API for millisecond confirmations, and RISE Wallet, an EIP-7702-powered wallet offering.
+                  </p>
+                </div>
+              </Link>
+
+              <Link
+                href="https://learnweb3.io"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="group grid cursor-pointer grid-cols-[5.5rem_1.25rem_1fr] gap-x-3 sm:grid-cols-[7rem_1.5rem_1fr] sm:gap-x-4"
+              >
+                <div className="pt-1 text-sm sm:text-base font-mono text-muted-foreground leading-6">
+                  <div>Jan 2025</div>
+                  <div>May 2023</div>
+                </div>
+
+                <div className="relative flex justify-center">
+                  <span className="relative z-10 mt-2 h-2.5 w-2.5 rounded-full bg-muted-foreground transition-colors group-hover:bg-foreground" />
+                  <span className="absolute top-0 bottom-6 border-l border-dashed border-muted-foreground/70" />
+                </div>
+
+                <div className="pb-2">
+                  <div className="mb-3 flex items-center gap-3">
+                    <Image
+                      src="/learnweb3-logo.png"
+                      alt="LearnWeb3 logo"
+                      width={32}
+                      height={32}
+                      className="h-8 w-8 rounded-full object-cover grayscale transition-all duration-300 group-hover:grayscale-0"
+                    />
+                    <h3 className="text-lg font-semibold">
+                      LearnWeb3 <span className="mx-1 text-muted-foreground">•</span>{" "}
+                      <span className="text-muted-foreground">Full-Stack Engineer & Technical Content Creator</span>
+                    </h3>
+                  </div>
+                  <p className="max-w-4xl text-muted-foreground">
+                    Maintained the LearnWeb3 platform, wrote technical lessons, built educational projects, worked on the AI and Ethereum degrees, and contributed full-stack and smart-contract work to Nucleo Finance.
+                  </p>
+                </div>
+              </Link>
+            </div>
+          </section>
 
           {/* Open Source Projects Section */}
           <div className="mb-12 mt-20">
@@ -351,7 +382,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {isLoading ? (
                 // Loading state
-                Array(4).fill(0).map((_, i) => (
+                Array(6).fill(0).map((_, i) => (
                   <div key={i} className="rounded-lg border p-6 bg-card animate-pulse">
                     <div className="h-6 bg-muted rounded w-1/3 mb-2"></div>
                     <div className="h-4 bg-muted rounded w-5/6 mb-4"></div>
