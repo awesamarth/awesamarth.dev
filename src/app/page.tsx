@@ -42,16 +42,16 @@ export default function Home() {
   const { address } = useAccount()
   const featuredRepos = [
     {
+      name: "watchdog",
+      description: "Local operator control plane for agentic loops and subagents",
+    },
+    {
       name: "agentis",
       description: "Complete financial infrastructure for AI agents on Solana",
     },
     {
       name: "ronin",
       description: "Agentic solutions engineer for protocol teams and enterprises",
-    },
-    {
-      name: "watchdog",
-      description: "Local operator control plane for agentic loops and subagents",
     },
     {
       name: "hazmat",

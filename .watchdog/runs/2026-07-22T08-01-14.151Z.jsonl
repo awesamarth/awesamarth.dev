@@ -1,0 +1,23 @@
+{"at":"2026-07-22T08:01:14.153Z","type":"thread.started","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","nickname":"Pi root","role":"orchestrator","kind":"root"}
+{"at":"2026-07-22T08:01:14.153Z","type":"thread.status","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","status":"idle"}
+{"at":"2026-07-22T08:01:14.153Z","type":"agent.effectiveConfig","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","model":"openai-codex/gpt-5.6-terra","reasoningEffort":"minimal"}
+{"at":"2026-07-22T08:01:35.401Z","type":"agent.effectiveConfig","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","model":"openai-codex/gpt-5.6-terra","reasoningEffort":"low"}
+{"at":"2026-07-22T08:01:46.286Z","type":"turn.input","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","turnId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf:turn:1","input":"how do i turn off a pi extension lmao. i wanna disable watchdog but i don't wanna uninstall the npm package from my machine"}
+{"at":"2026-07-22T08:01:46.287Z","type":"turn.started","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","turnId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf:turn:1"}
+{"at":"2026-07-22T08:01:46.287Z","type":"thread.status","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","status":"active"}
+{"at":"2026-07-22T08:01:46.287Z","type":"agent.effectiveConfig","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","model":"openai-codex/gpt-5.6-terra","reasoningEffort":"low"}
+{"at":"2026-07-22T08:01:52.797Z","type":"tokens.updated","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","totalTokens":4207,"inputTokens":4147,"outputTokens":60,"costUsd":0.011267500000000001}
+{"at":"2026-07-22T08:01:52.799Z","type":"agent.activity","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","tool":"read","status":"inProgress"}
+{"at":"2026-07-22T08:01:52.806Z","type":"agent.activity","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","tool":"read","status":"completed"}
+{"at":"2026-07-22T08:01:58.008Z","type":"tokens.updated","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","totalTokens":20407,"inputTokens":20217,"outputTokens":190,"costUsd":0.0453285}
+{"at":"2026-07-22T08:01:58.010Z","type":"agent.activity","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","tool":"read","status":"inProgress"}
+{"at":"2026-07-22T08:01:58.011Z","type":"agent.activity","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","tool":"read","status":"inProgress"}
+{"at":"2026-07-22T08:01:58.013Z","type":"agent.activity","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","tool":"read","status":"completed"}
+{"at":"2026-07-22T08:01:58.014Z","type":"agent.activity","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","tool":"read","status":"completed"}
+{"at":"2026-07-22T08:02:01.841Z","type":"tokens.updated","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","totalTokens":51033,"inputTokens":50782,"outputTokens":251,"costUsd":0.086944}
+{"at":"2026-07-22T08:02:01.842Z","type":"agent.activity","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","tool":"read","status":"inProgress"}
+{"at":"2026-07-22T08:02:01.843Z","type":"agent.activity","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","tool":"read","status":"completed"}
+{"at":"2026-07-22T08:02:07.747Z","type":"agent.message","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","itemId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf:message:4","message":"Run:\n\n```bash\npi config\n```\n\nFind the Watchdog package/extension and toggle its **extension** resource off. That only disables Pi loading it; it does **not** uninstall the npm package.\n\n- Press `Tab` in `pi config` to switch global vs project-local scope.\n- Restart Pi afterward (or try `/reload`).\n\nYou can re-enable it later from the same menu."}
+{"at":"2026-07-22T08:02:07.747Z","type":"tokens.updated","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","totalTokens":85619,"inputTokens":85185,"outputTokens":434,"costUsd":0.10772849999999999}
+{"at":"2026-07-22T08:02:07.755Z","type":"turn.completed","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","turnId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf:turn:1"}
+{"at":"2026-07-22T08:02:07.755Z","type":"thread.status","threadId":"pi-root-019f88d7-d364-73c4-a4eb-ca15474d82cf","status":"idle"}
