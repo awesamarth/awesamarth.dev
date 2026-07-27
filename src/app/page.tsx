@@ -253,7 +253,7 @@ export default function Home() {
               <h1 className="text-4xl font-bold mb-4 pb-3 border-b-2">
                 Hey, I'm Samarth!
               </h1>
-              <p className="text-lg text-muted-foreground max-w-xl mb-4">
+              <p className="text-lg text-muted-foreground mb-4">
                 I am a 23 year old full-stack engineer from India, working across AI agents, developer tools, and onchain
                 applications. I am extremely curious and on a pursuit of knowledge. I believe that being sincere is much more
                 important than being serious.
