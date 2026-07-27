@@ -254,8 +254,9 @@ export default function Home() {
                 Hey, I'm Samarth!
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl mb-4">
-                I am a 23 year old Full-Stack dev, Smart Contract dev and DevRel from India. I am extremely curious and on a
-                pursuit of knowledge. I believe that being sincere is much more important than being serious.
+                I am a 23 year old full-stack engineer from India, working across AI agents, developer tools, and onchain
+                applications. I am extremely curious and on a pursuit of knowledge. I believe that being sincere is much more
+                important than being serious.
               </p>
 
               <p className="text-muted-foreground [&:not(:first-child)]:mt-6">
