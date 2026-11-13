@@ -28,7 +28,7 @@ const pressStart2P = Press_Start_2P({
 
 
 
-const siteUrl = "https://awesamarth.dev";
+const siteUrl = "https://www.awesamarth.dev";
 const siteDescription =
   "Samarth Saxena (awesamarth) is a full-stack engineer from India building AI agents, developer tools and onchain apps, including Privy CLI, Agentis and Watchdog.";
 
