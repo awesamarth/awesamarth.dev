@@ -21,6 +21,7 @@ export function GameWindow({ open, onClose }: Props) {
   const [melting, setMelting] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [session, setSession] = useState(0) // bumping it reloads the game iframe
+  const [booted, setBooted] = useState(true) // false after Quit Game: no iframe (and no music) until reopened
   const readyRef = useRef(false)
   const runMeltRef = useRef<() => void>(() => {})
 
@@ -99,7 +100,7 @@ export function GameWindow({ open, onClose }: Props) {
         readyRef.current = false
         setReady(false)
         setMelting(true)
-        setSession(n => n + 1)
+        setBooted(false)
         onClose()
       }
       else if (e.data.type === 'error') setError(String(e.data.message))
@@ -112,6 +113,10 @@ export function GameWindow({ open, onClose }: Props) {
   useEffect(() => {
     if (open) {
       document.documentElement.style.overflow = 'hidden'
+      if (!booted) {
+        setSession(n => n + 1)
+        setBooted(true)
+      }
       if (readyRef.current) runMeltRef.current()
       else {
         // Title screen while the engine and WAD download.
@@ -128,7 +133,7 @@ export function GameWindow({ open, onClose }: Props) {
     return () => {
       document.documentElement.style.overflow = ''
     }
-  }, [open])
+  }, [open, booted])
 
   // Backtick also closes when focus is on the site rather than the game.
   useEffect(() => {
@@ -210,14 +215,14 @@ export function GameWindow({ open, onClose }: Props) {
             boxShadow: 'inset 0 0 0 2px #000, 0 0 0 1px #444',
           }}
         >
-          <iframe
+          {booted && <iframe
             key={session}
             ref={iframe}
             src="/doom/game/index.html"
             title="DOOM"
             allow="autoplay; fullscreen"
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0, display: 'block' }}
-          />
+          />}
           <canvas
             ref={melt}
             width={W}
