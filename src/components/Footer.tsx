@@ -13,7 +13,7 @@ export function Footer() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <nav className="flex items-center justify-center gap-4 py-3 text-sm bg-[#f2f2f2] dark:bg-[#0e0e0e]">
+    <nav data-doom-root className="relative flex items-center justify-center gap-4 py-3 text-sm bg-[#f2f2f2] dark:bg-[#0e0e0e]">
 
       <Link
         target="_blank" rel="noreferrer noopener"

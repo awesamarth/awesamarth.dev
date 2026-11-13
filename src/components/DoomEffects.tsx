@@ -1,18 +1,12 @@
 // components/DoomEffects.tsx
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useTheme } from 'next-themes'
 
 export function DoomEffects() {
   const { theme } = useTheme()
-  const gunshotSoundRef = useRef<HTMLAudioElement | null>(null)
   const isDoom = theme === 'doom'
-  
-  // Initialize audio elements
-  useEffect(() => {
-    gunshotSoundRef.current = new Audio('/gunshot.mp3')
-  }, [])
   
   // Handle cursor change
   useEffect(() => {
@@ -53,29 +47,6 @@ export function DoomEffects() {
       styleTag.remove();
     }
   }
-  
-  // Handle click sounds
-  useEffect(() => {
-    const handleClick = () => {
-      if (isDoom && gunshotSoundRef.current) {
-        // Reset the audio to the beginning if it's already playing
-        gunshotSoundRef.current.pause();
-        gunshotSoundRef.current.currentTime = 0;
-        
-        // Play the gunshot sound
-        gunshotSoundRef.current.volume = 0.1;
-        gunshotSoundRef.current.play().catch(e => console.log('Audio play failed:', e));
-      }
-    }
-    
-    if (isDoom) {
-      document.addEventListener('click', handleClick);
-    }
-    
-    return () => {
-      document.removeEventListener('click', handleClick);
-    }
-  }, [isDoom])
   
   // This component doesn't render anything visible
   return null

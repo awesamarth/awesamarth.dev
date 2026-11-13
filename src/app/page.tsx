@@ -84,7 +84,10 @@ export default function Home() {
   const [mintError, setMintError] = useState<string | null>(null);
   const [alreadyMinted, setAlreadyMinted] = useState(false);
 
-  const { address } = useAccount()
+  // The wagmi config is a module-level singleton, so on the server it can still hold another
+  // request's wallet state. Only trust the connected address in the browser, after mount.
+  const { address: connectedAddress } = useAccount()
+  const address = mounted ? connectedAddress : undefined
   const router = useRouter()
 
   const { theme } = useTheme();
@@ -283,7 +286,7 @@ export default function Home() {
 
           {/* Latest Commit Section */}
           <div className="my-12">
-            <div className="rounded-lg border p-6 bg-card">
+            <div data-doom-target className="relative rounded-lg border p-6 bg-card">
               <h2 className="flex items-center gap-2 text-xl font-semibold mb-4">
                 <GithubIcon className="fill-current" /> Latest Public Commit
               </h2>
@@ -398,7 +401,8 @@ export default function Home() {
                     href={repo.html_url}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="rounded-lg border p-6 bg-card hover:border-primary transition-colors"
+                    data-doom-target
+                    className="relative rounded-lg border p-6 bg-card hover:border-primary transition-colors"
                   >
                     <h3 className="text-xl font-semibold">{repo.name}</h3>
                     <p className="text-muted-foreground mb-4">{repo.description}</p>

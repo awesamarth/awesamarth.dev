@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { headers } from 'next/headers'
 import { DoomEasterEgg } from '@/components/DoomEasterEgg'
 import { DoomEffects } from '@/components/DoomEffects'
+import { DoomHud } from '@/components/DoomHud'
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -110,9 +111,10 @@ export default async function RootLayout({
           <ContextProvider cookies={cookies}>
             <DoomEasterEgg />
             <DoomEffects />
+            <DoomHud />
 
             <Navbar />
-            {children}
+            <div data-doom-root className="relative">{children}</div>
             <Footer />
           </ContextProvider>
         </ThemeProvider>

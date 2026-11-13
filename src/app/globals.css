@@ -258,3 +258,10 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* idkfa: armed weapons get a red crosshair and don't select text */
+html.doom.doom-armed,
+html.doom.doom-armed * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M12 2v7M12 15v7M2 12h7M15 12h7' stroke='%23ff2a00' stroke-width='2'/%3E%3Ccircle cx='12' cy='12' r='1.5' fill='%23ff2a00'/%3E%3C/svg%3E") 12 12, crosshair !important;
+  user-select: none;
+}
