@@ -4,9 +4,13 @@ import { GithubIcon, MailIcon } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 export function Footer() {
   const { theme } = useTheme();
+  // The theme is only known in the browser; avoid a server/client class mismatch.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <nav className="flex items-center justify-center gap-4 py-3 text-sm bg-[#f2f2f2] dark:bg-[#0e0e0e]">
@@ -16,7 +20,7 @@ export function Footer() {
         href="https://github.com/awesamarth"
         className="flex h-10 w-10 items-center justify-center rounded-md p-1 transition-all hover:bg-gray-200 dark:hover:bg-accent"
       >
-        <GithubIcon className={`h-5 w-5 ${theme == "light" ? "fill-white stroke-github" : "fill-white stroke-white"} fill-github stroke-github`} />
+        <GithubIcon className={`h-5 w-5 ${mounted && theme == "light" ? "fill-white stroke-github" : "fill-white stroke-white"} fill-github stroke-github`} />
       </Link>
 
       <Link

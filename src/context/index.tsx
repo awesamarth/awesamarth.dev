@@ -41,11 +41,17 @@ function ThemeSynchronizer() {
 
 function ContextProvider({ children, cookies }: { children: ReactNode; cookies: string | null }) {
   const [mounted, setMounted] = useState(false)
-  const [initialState, setInitialState] = useState<any>(undefined)
+  // Wagmi state from cookies is computed during render so the page can be server-rendered.
+  const [initialState] = useState<any>(() => {
+    try {
+      return cookieToInitialState(wagmiAdapter.wagmiConfig, cookies)
+    } catch {
+      console.warn("Continuing without blockchain state.")
+      return undefined
+    }
+  })
 
   useEffect(() => {
-    setMounted(true)
-
     // Only initialize AppKit on the client side
     if (typeof window !== 'undefined') {
       createAppKit({
@@ -69,27 +75,15 @@ function ContextProvider({ children, cookies }: { children: ReactNode; cookies: 
         themeMode: 'light'
       })
     }
+    setMounted(true)
+  }, [])
 
-    const initializeState = async () => {
-      try {
-        const state = cookieToInitialState(wagmiAdapter.wagmiConfig, cookies)
-        setInitialState(state)
-      } catch (error) {
-        console.warn("Continuing without blockchain state.")
-      }
-    }
-
-    initializeState()
-  }, [cookies])
-
-  if (!mounted) {
-    return null
-  }
-
+  // Always render children (server included) so search engines get real HTML.
+  // Only the AppKit theme sync waits for createAppKit to run in the browser.
   return (
     <WagmiProvider config={wagmiAdapter.wagmiConfig} initialState={initialState}>
       <QueryClientProvider client={queryClient}>
-        <ThemeSynchronizer />
+        {mounted && <ThemeSynchronizer />}
         {children}
       </QueryClientProvider>
     </WagmiProvider>

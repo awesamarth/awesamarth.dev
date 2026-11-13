@@ -28,9 +28,57 @@ const pressStart2P = Press_Start_2P({
 
 
 
+const siteUrl = "https://awesamarth.dev";
+const siteDescription =
+  "Samarth Saxena (awesamarth) is a full-stack engineer from India building AI agents, developer tools and onchain apps, including Privy CLI, Agentis and Watchdog.";
+
 export const metadata: Metadata = {
-  title: "Samarth Saxena | Portfolio",
-  description: "Portfolio showcasing my dev work and content",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "Samarth Saxena (awesamarth) | Full-Stack Engineer",
+    template: "%s | Samarth Saxena",
+  },
+  description: siteDescription,
+  authors: [{ name: "Samarth Saxena", url: siteUrl }],
+  creator: "Samarth Saxena",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "profile",
+    url: siteUrl,
+    siteName: "Samarth Saxena",
+    title: "Samarth Saxena (awesamarth) | Full-Stack Engineer",
+    description: siteDescription,
+    firstName: "Samarth",
+    lastName: "Saxena",
+    username: "awesamarth",
+  },
+  twitter: {
+    card: "summary",
+    creator: "@awesamarth_",
+    title: "Samarth Saxena (awesamarth) | Full-Stack Engineer",
+    description: siteDescription,
+  },
+};
+
+// Tells search engines which "Samarth Saxena" this is and links his profiles together.
+const personJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Samarth Saxena",
+  alternateName: "awesamarth",
+  url: siteUrl,
+  jobTitle: "Full-Stack Engineer",
+  description: siteDescription,
+  nationality: { "@type": "Country", name: "India" },
+  knowsAbout: ["AI agents", "Developer tools", "TypeScript", "Ethereum", "Solana", "Web3"],
+  sameAs: [
+    "https://github.com/awesamarth",
+    "https://x.com/awesamarth_",
+    "https://www.linkedin.com/in/awesamarth",
+    "https://www.youtube.com/@awesamarth",
+    "https://t.me/awesamarth",
+    "https://www.npmjs.com/~awesamarth",
+  ],
 };
 
 
@@ -44,6 +92,12 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pressStart2P.variable} antialiased`}
       >

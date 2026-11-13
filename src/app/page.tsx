@@ -1,6 +1,5 @@
 'use client'
 
-import Head from "next/head";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -32,40 +31,60 @@ export default function Home() {
     language_color?: string; // We'll add this manually based on language
   };
 
-  const [latestCommit, setLatestCommit] = useState<GithubCommit | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [repositories, setRepositories] = useState<Repository[]>([]);
-  const [isMinting, setIsMinting] = useState(false);
-  const [mintError, setMintError] = useState<string | null>(null);
-  const [alreadyMinted, setAlreadyMinted] = useState(false);
-
-  const { address } = useAccount()
   const featuredRepos = [
     {
-      name: "watchdog",
-      description: "Local operator control plane for agentic loops and subagents",
+      name: "privy-cli",
+      description: "Manage your Privy account and apps from your agent or terminal. Inspired by Cloudflare's cf CLI (Unofficial)",
     },
     {
       name: "agentis",
       description: "Complete financial infrastructure for AI agents on Solana",
     },
     {
-      name: "ronin",
-      description: "Agentic solutions engineer for protocol teams and enterprises",
+      name: "pebble",
+      description: "An open-source personal assistant with a character of your own",
     },
     {
-      name: "hazmat",
-      description: "Local exposure scanner, reporter, and scrubber for AI coding-agent transcripts",
+      name: "watchdog",
+      description: "Local operator control plane for agentic loops and subagents",
+    },
+    {
+      name: "rough-cut",
+      description: "Human-first, WebMCP-native video editor on Cloudflare",
+    },
+    {
+      name: "ronin",
+      description: "Agentic solutions engineer for protocol teams and enterprises",
     },
     {
       name: "croc-ai",
       description: "Your friendly neighbourhood browser assistant",
     },
     {
-      name: "mega-cli",
-      description: "A CLI toolkit for MegaETH developers and users",
+      name: "pi-embed",
+      description: "Headless Pi runtime for embedding persistent coding agents in browsers, workers, and servers",
     },
   ];
+  // Cards render immediately (and on the server) from the list above;
+  // language and last-updated date are filled in from GitHub after load.
+  const staticRepos: Repository[] = featuredRepos.map(repo => ({
+    name: repo.name,
+    description: repo.description,
+    language: "TypeScript",
+    updated_at: "",
+    html_url: `https://github.com/awesamarth/${repo.name}`,
+    language_color: "#3178c6",
+  }));
+
+  const [latestCommit, setLatestCommit] = useState<GithubCommit | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [repositories, setRepositories] = useState<Repository[]>(staticRepos);
+  const [mounted, setMounted] = useState(false);
+  const [isMinting, setIsMinting] = useState(false);
+  const [mintError, setMintError] = useState<string | null>(null);
+  const [alreadyMinted, setAlreadyMinted] = useState(false);
+
+  const { address } = useAccount()
   const router = useRouter()
 
   const { theme } = useTheme();
@@ -124,14 +143,7 @@ export default function Home() {
       setRepositories(fetchedRepos);
     } catch (error) {
       console.error('Error fetching repositories:', error);
-      setRepositories(featuredRepos.map(repo => ({
-        name: repo.name,
-        description: repo.description,
-        language: "TypeScript",
-        updated_at: "Recently",
-        html_url: `https://github.com/awesamarth/${repo.name}`,
-        language_color: "#3178c6"
-      })));
+      setRepositories(staticRepos);
     }
   }
 
@@ -232,6 +244,8 @@ export default function Home() {
 
 
 
+    setMounted(true);
+
     Promise.all([fetchGithubCommit(), fetchRepositories()])
       .finally(() => setIsLoading(false));
 
@@ -239,11 +253,6 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <title>Samarth Saxena- Portfolio</title>
-        <meta name="description" content="Software Engineer Portfolio" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
 
       <div className="min-h-screen bg-background dark:bg-[#191919] text-foreground">
         <main className="max-w-screen-2xl mx-auto py-12 px-4 sm:px-6 md:px-20 2xl:px-28">
@@ -261,7 +270,7 @@ export default function Home() {
 
               <p className="text-muted-foreground [&:not(:first-child)]:mt-6">
                 Fun fact: I love DOOM. A lot.
-                {typeof window !== 'undefined' && 'ontouchstart' in window === false && (
+                {mounted && 'ontouchstart' in window === false && (
                   isDoomActive ? (
                     <span className="ml-1 font-bold text-primary">{" "}RIP AND TEAR!</span>
                   ) : (
@@ -381,22 +390,7 @@ export default function Home() {
           <div className="mb-12 mt-20">
             <h2 className="text-2xl font-bold mb-6">Open Source Projects</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {isLoading ? (
-                // Loading state
-                Array(6).fill(0).map((_, i) => (
-                  <div key={i} className="rounded-lg border p-6 bg-card animate-pulse">
-                    <div className="h-6 bg-muted rounded w-1/3 mb-2"></div>
-                    <div className="h-4 bg-muted rounded w-5/6 mb-4"></div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-muted"></div>
-                        <div className="h-4 bg-muted rounded w-16"></div>
-                      </div>
-                      <div className="h-4 bg-muted rounded w-32"></div>
-                    </div>
-                  </div>
-                ))
-              ) : repositories.length > 0 ? (
+              {repositories.length > 0 ? (
                 // Display actual repositories
                 repositories.map((repo) => (
                   <Link
@@ -418,9 +412,11 @@ export default function Home() {
                         ></span>
                         <span>{repo.language}</span>
                       </div>
-                      <span className="text-sm text-muted-foreground">
-                        Updated on {repo.updated_at}
-                      </span>
+                      {repo.updated_at && (
+                        <span className="text-sm text-muted-foreground">
+                          Updated on {repo.updated_at}
+                        </span>
+                      )}
                     </div>
                   </Link>
                 ))
