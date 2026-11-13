@@ -11,6 +11,7 @@ import { useTheme } from 'next-themes'
 import { loadManifest, spriteUrl, type Manifest } from './doom/sprites'
 import { Destruction } from './doom/destruction'
 import { Backdrop } from './doom/Backdrop'
+import { GameWindow } from './doom/GameWindow'
 
 type Weapon = 'fist' | 'pistol' | 'shotgun' | 'chaingun' | 'rocket' | 'bfg'
 type Sfx = 'pistol' | 'shotgn' | 'punch' | 'plpain' | 'rlaunc' | 'barexp' | 'bfg' | 'rxplod'
@@ -115,6 +116,10 @@ export function DoomHud() {
   const [scale, setScale] = useState(3)
   const [hud, setHud] = useState<HudSnapshot | null>(null)
   const [layers, setLayers] = useState<HTMLDivElement[]>([])
+  const [gameOpen, setGameOpen] = useState(false)
+  const [gameMounted, setGameMounted] = useState(false)
+  const gameOpenRef = useRef(false)
+  gameOpenRef.current = gameOpen
   const overlay = useRef<HTMLCanvasElement>(null)
   const greenFlash = useRef<HTMLDivElement>(null)
   const useLabel = useRef<HTMLDivElement>(null)
@@ -142,6 +147,8 @@ export function DoomHud() {
   useEffect(() => {
     if (!enabled) {
       setHud(null)
+      setGameOpen(false)
+      setGameMounted(false)
       return
     }
     let cancelled = false
@@ -412,7 +419,7 @@ export function DoomHud() {
     }
     const inHud = (e: Event) => !!(e.target as Element)?.closest?.('[data-doom-hud]')
     const onKey = (e: KeyboardEvent) => {
-      if (typing(e) || e.metaKey || e.ctrlKey || e.altKey) return
+      if (gameOpenRef.current || typing(e) || e.metaKey || e.ctrlKey || e.altKey) return
       if (SLOT[e.key]) selectWeapon(SLOT[e.key])
       else if (e.key === 'Escape') selectWeapon('fist')
     }
@@ -572,13 +579,16 @@ export function DoomHud() {
                 {num(MAX_AMMO.rockets, 314, 17, 'STYSNUM', 4)}
                 {num(hud.ammo.cells, 288, 23, 'STYSNUM', 4)}
                 {num(MAX_AMMO.cells, 314, 23, 'STYSNUM', 4)}
-                {/* Doomguy. Clicking him will start the real game later; for now he just says ouch. */}
+                {/* Doomguy: click him to play the real thing. */}
                 <button
                   type="button"
-                  aria-label="Doomguy"
+                  aria-label="Play DOOM"
+                  title="Play DOOM"
                   onClick={() => {
-                    g.current.ouchTics = 35
-                    play('plpain', 0.25)
+                    g.current.grinTics = 35
+                    g.current.held = false
+                    setGameMounted(true)
+                    setGameOpen(true)
                   }}
                   style={{ position: 'absolute', left: 143 * s, top: 0, width: 35 * s, height: 32 * s, background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
                 />
@@ -588,6 +598,7 @@ export function DoomHud() {
           </>
         )}
       </div>
+      {gameMounted && <GameWindow open={gameOpen} onClose={() => setGameOpen(false)} />}
     </>
   )
 }

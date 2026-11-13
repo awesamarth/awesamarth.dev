@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>DOOM</title>
+    <meta name="robots" content="noindex" />
+    <!--
+      Chocolate Doom compiled to WebAssembly (cloudflare/doom-wasm, GPL-2.0); see SOURCE.txt.
+      DOOM1.WAD is the unmodified shareware release by id Software.
+      Embedded by the idkfa easter egg on awesamarth.dev; talks to the parent page with postMessage.
+    -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #000;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        image-rendering: pixelated;
+        outline: none;
+        cursor: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
+    <script>
+      // Keep track of audio contexts so the parent can silence the game while its window is closed.
+      const audioContexts = []
+      for (const name of ['AudioContext', 'webkitAudioContext']) {
+        const Original = window[name]
+        if (!Original) continue
+        window[name] = function (...args) {
+          const ctx = new Original(...args)
+          audioContexts.push(ctx)
+          return ctx
+        }
+        window[name].prototype = Original.prototype
+      }
+
+      const post = (type, data) => parent !== window && parent.postMessage({ source: 'doom', type, ...data }, location.origin)
+      const canvas = document.getElementById('canvas')
+      let ready = false
+
+      // A real key press for the engine (SDL listens on window and reads key/code/keyCode).
+      function press(key, code, keyCode) {
+        for (const type of ['keydown', 'keyup']) {
+          const e = new KeyboardEvent(type, { key, code, bubbles: true, cancelable: true })
+          Object.defineProperty(e, 'keyCode', { get: () => keyCode })
+          Object.defineProperty(e, 'which', { get: () => keyCode })
+          window.dispatchEvent(e)
+        }
+      }
+
+      window.doom = {
+        // Closing the window opens DOOM's own menu, which pauses a single-player game, then mutes it.
+        pause() {
+          if (document.pointerLockElement) document.exitPointerLock()
+          if (ready && !menuOpen) press('Escape', 'Escape', 27)
+          audioContexts.forEach(c => c.suspend())
+        },
+        resume() {
+          audioContexts.forEach(c => c.resume())
+          canvas.focus()
+        },
+      }
+
+      // Track DOOM's menu from Escape presses; good enough to avoid toggling it closed on pause.
+      let menuOpen = false
+      window.addEventListener(
+        'keydown',
+        e => {
+          if (e.code === 'Backquote') {
+            e.preventDefault()
+            e.stopImmediatePropagation()
+            post('close')
+            return
+          }
+          if (e.key === 'Escape') menuOpen = !menuOpen
+        },
+        true,
+      )
+      // First click captures the mouse; SDL asks for pointer lock once the game grabs it.
+      canvas.addEventListener('mousedown', () => {
+        canvas.focus()
+        if (!document.pointerLockElement) canvas.requestPointerLock?.()
+      })
+
+      var Module = {
+        canvas,
+        noInitialRun: true,
+        locateFile: path => (path.endsWith('.wasm') ? 'doom.wasm' : path),
+        preRun: [
+          () => {
+            Module.FS.createPreloadedFile('/', 'doom1.wad', 'DOOM1.WAD', true, false)
+            Module.FS.createPreloadedFile('/', 'default.cfg', 'default.cfg', true, true)
+          },
+        ],
+        onRuntimeInitialized() {
+          Module.callMain(['-iwad', 'doom1.wad', '-config', 'default.cfg', '-window', '-nogui', '-warp', '1', '1', '-skill', '3'])
+        },
+        print(text) {
+          if (location.hash === "#debug") console.log("[doom]", text)
+          // Printed right before the first frame of E1M1.
+          if (!ready && /emscripten_set_main_loop/.test(text)) {
+            ready = true
+            setTimeout(() => post('ready'), 250)
+          }
+        },
+        printErr(text) {
+          console.warn('[doom]', text)
+        },
+        monitorRunDependencies(left) {
+          post('progress', { left })
+        },
+      }
+      window.addEventListener('error', e => post('error', { message: String(e.message || e) }))
+    </script>
+    <script src="doom.js"></script>
+  </body>
+</html>

@@ -1,0 +1,81 @@
+DOOM engine used by the idkfa easter egg on awesamarth.dev
+==========================================================
+
+doom.js and doom.wasm are a WebAssembly build of Chocolate Doom, from Cloudflare's port:
+
+  https://github.com/cloudflare/doom-wasm  (commit 65e0d3a, GPL-2.0, see COPYING.md there)
+
+Built with Emscripten 3.1.64 (autoconf 2.69, automake 1.17):
+
+  autoreconf -fi
+  ac_cv_exeext=".html" emconfigure ./configure --host=none-none-none
+  emmake make
+  wasm-opt websockets-doom.wasm --strip-debug --strip-dwarf -O3 --all-features -o doom.wasm
+
+Changes against that commit (full diff below):
+  - configure.ac: build flags updated for current Emscripten, no debug/safe-heap instrumentation
+  - opl/opl.c: skip OPL chip detection on Emscripten (it deadlocks waiting for the audio callback),
+    which makes the OPL music emulation work in the browser
+  - src/doomtype.h: keep `boolean` int-sized when <stdbool.h> is already included (newer
+    Emscripten headers include it, which mixed 1- and 4-byte booleans between files)
+
+DOOM1.WAD is the unmodified DOOM shareware v1.9 data file by id Software
+(SHA-256 1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771).
+
+diff --git a/configure.ac b/configure.ac
+index ae1320b..33e7470 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -115,7 +115,7 @@ AS_IF([test "x$with_libpng" != xno], [
+ 
+ # TODO: We currently link everything against libraries that don't need it.
+ # Use the specific library CFLAGS/LIBS variables instead of setting them here.
+-EMFLAGS="-gsource-map -s INVOKE_RUN=1 -s USE_SDL=2 -s USE_SDL_MIXER=2 -s LEGACY_GL_EMULATION=0 -s USE_SDL_NET=2 -s ASSERTIONS=0 -s WASM=1 -s ALLOW_MEMORY_GROWTH=0 -s FORCE_FILESYSTEM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS=[['FS','ccall']] -s SAFE_HEAP=1 -s EXIT_RUNTIME=1 -s STACK_OVERFLOW_CHECK=1 -s PROXY_POSIX_SOCKETS=0 -s USE_PTHREADS=0 -s PROXY_TO_PTHREAD=0 -s TOTAL_MEMORY=64MB -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s ASYNCIFY -O3 --source-map-base /"
++EMFLAGS="-s INVOKE_RUN=0 -s USE_SDL=2 -s USE_SDL_MIXER=2 -s USE_SDL_NET=2 -s ASSERTIONS=0 -s WASM=1 -s ALLOW_MEMORY_GROWTH=0 -s FORCE_FILESYSTEM=1 -s EXPORTED_RUNTIME_METHODS=[[FS,callMain]] -s EXIT_RUNTIME=0 -s PROXY_POSIX_SOCKETS=0 -s INITIAL_MEMORY=64MB -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s ASYNCIFY -s ENVIRONMENT=web -O3"
+ 
+ CFLAGS="$CFLAGS $SDL_CFLAGS ${SAMPLERATE_CFLAGS:-} ${PNG_CFLAGS:-} $EMFLAGS"
+ LDFLAGS="$LDFLAGS $SDL_LIBS ${SAMPLERATE_LIBS:-} ${PNG_LIBS:-} $EMFLAGS -lwebsocket.js"
+diff --git a/opl/opl.c b/opl/opl.c
+index a1aa1d9..e584473 100644
+--- a/opl/opl.c
++++ b/opl/opl.c
+@@ -86,6 +86,14 @@ static opl_init_result_t InitDriver(opl_driver_t *_driver,
+     driver = _driver;
+     init_stage_reg_writes = 1;
+ 
++#ifdef __EMSCRIPTEN__
++    // The emulated chip always exists, and detection waits on the audio callback, which can't
++    // run while we block the only thread. Skip it and use OPL2 mode, like the original game.
++    init_stage_reg_writes = 0;
++    printf("OPL_Init: Using driver '%s' (detection skipped).\n", driver->name);
++    return OPL_INIT_OPL2;
++#endif
++
+     result1 = OPL_Detect();
+     result2 = OPL_Detect();
+     if (result1 == OPL_INIT_NONE || result2 == OPL_INIT_NONE)
+diff --git a/src/doomtype.h b/src/doomtype.h
+index 9947a07..9ac80c2 100644
+--- a/src/doomtype.h
++++ b/src/doomtype.h
+@@ -100,12 +100,19 @@
+ 
+ #include <inttypes.h>
+ 
+-#if defined(__cplusplus) || defined(__bool_true_false_are_defined)
++#if defined(__cplusplus)
+ 
+ // Use builtin bool type with C++.
+ 
+ typedef bool boolean;
+ 
++#elif defined(__bool_true_false_are_defined)
++
++// <stdbool.h> was already included (newer emscripten/em_types.h does this). Keep boolean the
++// same size as the enum below, or structs and arrays differ between translation units.
++
++typedef int boolean;
++
+ #else
+ 
+ typedef enum 
