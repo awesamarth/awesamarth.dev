@@ -5,6 +5,7 @@
 // separate from the site. Closing pauses it (DOOM's own menu + muted audio); reopening resumes.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { Maximize2, X } from 'lucide-react'
 import { spriteUrl } from './sprites'
 
 type Props = { open: boolean; onClose: () => void }
@@ -19,6 +20,7 @@ export function GameWindow({ open, onClose }: Props) {
   const [ready, setReady] = useState(false)
   const [melting, setMelting] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [session, setSession] = useState(0) // bumping it reloads the game iframe
   const readyRef = useRef(false)
   const runMeltRef = useRef<() => void>(() => {})
 
@@ -92,6 +94,14 @@ export function GameWindow({ open, onClose }: Props) {
         setReady(true)
         runMeltRef.current()
       } else if (e.data.type === 'close') onClose()
+      else if (e.data.type === 'quit') {
+        // The engine has exited; close the window and boot a fresh game for next time.
+        readyRef.current = false
+        setReady(false)
+        setMelting(true)
+        setSession(n => n + 1)
+        onClose()
+      }
       else if (e.data.type === 'error') setError(String(e.data.message))
     }
     window.addEventListener('message', onMessage)
@@ -180,10 +190,10 @@ export function GameWindow({ open, onClose }: Props) {
           </span>
           <span style={{ display: 'flex', gap: 6 }}>
             <BezelButton label="Fullscreen" onClick={() => screen.current?.requestFullscreen().then(focusGame).catch(() => {})}>
-              ⛶
+              <Maximize2 size={13} strokeWidth={2.25} />
             </BezelButton>
             <BezelButton label="Close (`)" onClick={onClose}>
-              ✕
+              <X size={14} strokeWidth={2.5} />
             </BezelButton>
           </span>
         </div>
@@ -201,6 +211,7 @@ export function GameWindow({ open, onClose }: Props) {
           }}
         >
           <iframe
+            key={session}
             ref={iframe}
             src="/doom/game/index.html"
             title="DOOM"
@@ -259,12 +270,14 @@ function BezelButton({ label, onClick, children }: { label: string; onClick: () 
       style={{
         width: 26,
         height: 22,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 0,
         borderRadius: 5,
         border: '1px solid #000',
         background: 'linear-gradient(#4a4a4a, #2a2a2a)',
         color: '#ddd',
-        fontSize: 12,
-        lineHeight: 1,
         cursor: 'pointer',
       }}
     >

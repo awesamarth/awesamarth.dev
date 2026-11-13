@@ -57,15 +57,27 @@
         }
       }
 
+      // The engine creates and closes a context while starting up; only touch live ones.
+      const liveAudio = () => audioContexts.filter(c => c.state !== 'closed')
+      let pausedByUs = false
+      let quitting = false
+      let started = false
+
       window.doom = {
         // Closing the window opens DOOM's own menu, which pauses a single-player game, then mutes it.
         pause() {
           if (document.pointerLockElement) document.exitPointerLock()
-          if (ready && !menuOpen) press('Escape', 'Escape', 27)
-          audioContexts.forEach(c => c.suspend())
+          if (ready && !menuOpen) {
+            press('Escape', 'Escape', 27)
+            pausedByUs = true
+          }
+          liveAudio().forEach(c => c.suspend().catch(() => {}))
         },
+        // Reopening closes the menu we opened, so you're straight back in the game.
         resume() {
-          audioContexts.forEach(c => c.resume())
+          liveAudio().forEach(c => c.resume().catch(() => {}))
+          if (pausedByUs && menuOpen) press('Escape', 'Escape', 27)
+          pausedByUs = false
           canvas.focus()
         },
       }
@@ -103,6 +115,7 @@
         ],
         onRuntimeInitialized() {
           Module.callMain(['-iwad', 'doom1.wad', '-config', 'default.cfg', '-window', '-nogui', '-warp', '1', '1', '-skill', '3'])
+          started = true
         },
         print(text) {
           if (location.hash === "#debug") console.log("[doom]", text)
@@ -111,6 +124,14 @@
             ready = true
             setTimeout(() => post('ready'), 250)
           }
+        },
+        // "Quit Game" exits the engine (like quitting to DOS); tell the page so it can start fresh.
+        quit(status, toThrow) {
+          // Emscripten also calls this when main() returns after starting the game loop: ignore that.
+          if (!started) throw toThrow
+          if (!quitting) post('quit', { status })
+          quitting = true
+          throw 'unwind' // Emscripten's silent "stop here"; the page swaps in a fresh iframe
         },
         printErr(text) {
           console.warn('[doom]', text)
