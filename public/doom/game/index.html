@@ -98,6 +98,14 @@
             post('close')
             return
           }
+          // F = the same fullscreen as the window's button (the engine's own toggle is disabled in
+          // default.cfg: it fullscreened the canvas separately and got stuck at the wrong size).
+          if (e.code === 'KeyF' && !e.repeat && !(Module._doom_menu_mode && Module._doom_menu_mode() === 2)) {
+            e.preventDefault()
+            e.stopImmediatePropagation()
+            post('fullscreen')
+            return
+          }
           if (e.key === 'Escape') menuOpen = !menuOpen
         },
         true,

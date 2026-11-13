@@ -20,7 +20,7 @@ export function GameWindow({ open, onClose }: Props) {
   const [ready, setReady] = useState(false)
   const [melting, setMelting] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [menu, setMenu] = useState(false)
+  const enterFullscreenRef = useRef<() => void>(() => {})
   const [session, setSession] = useState(0) // bumping it reloads the game iframe
   const [booted, setBooted] = useState(true) // false after Quit Game: no iframe (and no music) until reopened
   const readyRef = useRef(false)
@@ -96,7 +96,10 @@ export function GameWindow({ open, onClose }: Props) {
         setReady(true)
         runMeltRef.current()
       } else if (e.data.type === 'close') onClose()
-      else if (e.data.type === 'menu') setMenu(!!e.data.open)
+      else if (e.data.type === 'fullscreen') {
+        if (document.fullscreenElement) document.exitFullscreen().catch(() => {})
+        else enterFullscreenRef.current()
+      }
       else if (e.data.type === 'quit') {
         // The engine has exited; close the window and boot a fresh game for next time.
         readyRef.current = false
@@ -159,6 +162,7 @@ export function GameWindow({ open, onClose }: Props) {
       .then(focusGame)
       .catch(() => {})
   }
+  enterFullscreenRef.current = enterFullscreen
   useEffect(() => {
     const onChange = () => {
       if (!document.fullscreenElement) (navigator as Navigator & { keyboard?: { unlock(): void } }).keyboard?.unlock()
@@ -271,11 +275,7 @@ export function GameWindow({ open, onClose }: Props) {
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', columnGap: 16, rowGap: 2, marginTop: 9, color: '#8a8a8a', fontSize: 11, lineHeight: 1.4 }}>
-          <span style={{ minWidth: 0, color: menu ? '#e8e8e8' : undefined }}>
-            {menu
-              ? 'Menu: point and click (or ↑↓ + Enter) · Esc back · Y/N for prompts'
-              : 'Click to grab the mouse · WASD move · click fire · E use · 1-7 weapons · Esc menu · ` close'}
-          </span>
+          <span style={{ minWidth: 0 }}>Click to grab the mouse · WASD move · click fire · E use · 1-7 weapons · Esc menu · F fullscreen · ` close</span>
           <span style={{ whiteSpace: 'nowrap' }}>
             DOOM shareware © id Software · Engine:{' '}
             <a href="/doom/game/SOURCE.txt" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>
