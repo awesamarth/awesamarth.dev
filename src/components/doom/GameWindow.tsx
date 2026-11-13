@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Maximize2, X } from 'lucide-react'
 import { spriteUrl } from './sprites'
+import { preloadDoom } from './preload'
 
 type Props = { open: boolean; onClose: () => void }
 
@@ -261,7 +262,26 @@ export function GameWindow({ open, onClose }: Props) {
             }}
           />
           {!ready && !error && <Notice font={font}>LOADING...</Notice>}
-          {error && <Notice font={font}>{`ERROR: ${error.slice(0, 60)}`}</Notice>}
+          {error && (
+            <Notice font={font}>
+              {`ERROR: ${error.slice(0, 60)}`}
+              <br />
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null)
+                  readyRef.current = false
+                  setReady(false)
+                  setMelting(true)
+                  preloadDoom()
+                  setSession(n => n + 1)
+                }}
+                style={{ marginTop: 10, pointerEvents: 'auto', font: 'inherit', color: '#fff', background: '#7a0000', border: '2px solid #fff', padding: '4px 12px', cursor: 'pointer', textShadow: 'inherit' }}
+              >
+                RETRY
+              </button>
+            </Notice>
+          )}
           {/* CRT scanlines */}
           <div
             style={{

@@ -180,12 +180,6 @@
         canvas,
         noInitialRun: true,
         locateFile: path => (path.endsWith('.wasm') ? 'doom.wasm' : path),
-        preRun: [
-          () => {
-            Module.FS.createPreloadedFile('/', 'doom1.wad', 'DOOM1.WAD', true, false)
-            Module.FS.createPreloadedFile('/', 'default.cfg', 'default.cfg', true, true)
-          },
-        ],
         onRuntimeInitialized() {
           Module.callMain(['-iwad', 'doom1.wad', '-config', 'default.cfg', '-window', '-nogui', '-warp', '1', '1', '-skill', '3'])
           started = true
@@ -214,7 +208,56 @@
         },
       }
       window.addEventListener('error', e => post('error', { message: String(e.message || e) }))
+
+      // Files: reuse what the page preloaded when idkfa was typed (window.__doomPreload, see
+      // src/components/doom/preload.ts), otherwise download them here. Everything retries.
+      async function fetchWithRetry(url, tries = 3) {
+        for (let i = 0; ; i++) {
+          try {
+            const res = await fetch(url)
+            if (!res.ok) throw new Error('HTTP ' + res.status)
+            return await res.arrayBuffer()
+          } catch (e) {
+            if (i >= tries - 1) throw e
+            await new Promise(r => setTimeout(r, 1000 * (i + 1)))
+          }
+        }
+      }
+      function file(name) {
+        let preloaded
+        try {
+          preloaded = parent.__doomPreload && parent.__doomPreload[name]
+        } catch {}
+        return (preloaded || Promise.reject()).catch(() => fetchWithRetry(name))
+      }
+      function loadScript(src, tries = 3) {
+        return new Promise((resolve, reject) => {
+          const attempt = n => {
+            const s = document.createElement('script')
+            s.src = n ? src + '?retry=' + n : src
+            s.onload = resolve
+            s.onerror = () => {
+              s.remove()
+              if (n + 1 >= tries) reject(new Error('could not load ' + src))
+              else setTimeout(() => attempt(n + 1), 1000 * (n + 1))
+            }
+            document.body.appendChild(s)
+          }
+          attempt(0)
+        })
+      }
+      Promise.all([file('doom.wasm'), file('DOOM1.WAD'), file('default.cfg')])
+        .then(([wasm, wad, cfg]) => {
+          Module.wasmBinary = wasm
+          Module.preRun = [
+            () => {
+              Module.FS.writeFile('/doom1.wad', new Uint8Array(wad))
+              Module.FS.writeFile('/default.cfg', new Uint8Array(cfg))
+            },
+          ]
+          return loadScript('doom.js')
+        })
+        .catch(e => post('error', { message: 'Download failed (' + ((e && e.message) || 'network') + ')' }))
     </script>
-    <script src="doom.js"></script>
   </body>
 </html>

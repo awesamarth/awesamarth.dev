@@ -12,6 +12,7 @@ import { loadManifest, spriteUrl, type Manifest } from './doom/sprites'
 import { Destruction } from './doom/destruction'
 import { Backdrop } from './doom/Backdrop'
 import { GameWindow } from './doom/GameWindow'
+import { preloadDoom } from './doom/preload'
 
 type Weapon = 'fist' | 'pistol' | 'shotgun' | 'chaingun' | 'rocket' | 'bfg'
 type Sfx = 'pistol' | 'shotgn' | 'punch' | 'plpain' | 'rlaunc' | 'barexp' | 'bfg' | 'rxplod'
@@ -153,6 +154,7 @@ export function DoomHud() {
     }
     let cancelled = false
     loadManifest().then(m => !cancelled && setManifest(m))
+    preloadDoom()
     for (const name of SFX) {
       const a = new Audio(`/doom/sfx/${name}.wav`)
       a.preload = 'auto'
