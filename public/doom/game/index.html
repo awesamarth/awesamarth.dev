@@ -57,6 +57,9 @@
         }
       }
 
+      // Real menu state, exported from the engine (m_menu.c); key counting is only a fallback.
+      const menuActive = () => (Module._doom_menu_active ? !!Module._doom_menu_active() : menuOpen)
+
       // The engine creates and closes a context while starting up; only touch live ones.
       const liveAudio = () => audioContexts.filter(c => c.state !== 'closed')
       let pausedByUs = false
@@ -66,8 +69,10 @@
       window.doom = {
         // Closing the window opens DOOM's own menu, which pauses a single-player game, then mutes it.
         pause() {
+          window.__closing = true
+          setTimeout(() => (window.__closing = false), 100)
           if (document.pointerLockElement) document.exitPointerLock()
-          if (ready && !menuOpen) {
+          if (ready && !menuActive()) {
             press('Escape', 'Escape', 27)
             pausedByUs = true
           }
@@ -76,7 +81,7 @@
         // Reopening closes the menu we opened, so you're straight back in the game.
         resume() {
           liveAudio().forEach(c => c.resume().catch(() => {}))
-          if (pausedByUs && menuOpen) press('Escape', 'Escape', 27)
+          if (pausedByUs && menuActive()) press('Escape', 'Escape', 27)
           pausedByUs = false
           canvas.focus()
         },
@@ -97,6 +102,24 @@
         },
         true,
       )
+      // Browsers keep the first Esc for releasing the mouse, so the game never sees it.
+      // When that happens mid-game, open DOOM's menu ourselves: one Esc does both.
+      document.addEventListener('pointerlockchange', () => {
+        if (document.pointerLockElement || !ready || quitting || window.__closing) return
+        setTimeout(() => !menuActive() && press('Escape', 'Escape', 27), 0)
+      })
+
+      // Tell the page when the menu opens or closes (it shows keyboard hints).
+      let lastMenu = null
+      const watchMenu = () => {
+        if (ready) {
+          const open = menuActive()
+          if (open !== lastMenu) post('menu', { open: (lastMenu = open) })
+        }
+        requestAnimationFrame(watchMenu)
+      }
+      requestAnimationFrame(watchMenu)
+
       // First click captures the mouse; SDL asks for pointer lock once the game grabs it.
       canvas.addEventListener('mousedown', () => {
         canvas.focus()

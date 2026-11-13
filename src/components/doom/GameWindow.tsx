@@ -20,6 +20,7 @@ export function GameWindow({ open, onClose }: Props) {
   const [ready, setReady] = useState(false)
   const [melting, setMelting] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [menu, setMenu] = useState(false)
   const [session, setSession] = useState(0) // bumping it reloads the game iframe
   const [booted, setBooted] = useState(true) // false after Quit Game: no iframe (and no music) until reopened
   const readyRef = useRef(false)
@@ -95,6 +96,7 @@ export function GameWindow({ open, onClose }: Props) {
         setReady(true)
         runMeltRef.current()
       } else if (e.data.type === 'close') onClose()
+      else if (e.data.type === 'menu') setMenu(!!e.data.open)
       else if (e.data.type === 'quit') {
         // The engine has exited; close the window and boot a fresh game for next time.
         readyRef.current = false
@@ -148,6 +150,23 @@ export function GameWindow({ open, onClose }: Props) {
     return () => window.removeEventListener('keydown', onKey)
   }, [open, onClose])
 
+  // In fullscreen, Chrome/Edge let the page claim Esc (Keyboard Lock API): Esc goes to DOOM and
+  // holding it leaves fullscreen. Other browsers fall back to "one Esc releases the mouse + menu".
+  function enterFullscreen() {
+    screen.current
+      ?.requestFullscreen()
+      .then(() => (navigator as Navigator & { keyboard?: { lock(keys: string[]): Promise<void> } }).keyboard?.lock(['Escape']).catch(() => {}))
+      .then(focusGame)
+      .catch(() => {})
+  }
+  useEffect(() => {
+    const onChange = () => {
+      if (!document.fullscreenElement) (navigator as Navigator & { keyboard?: { unlock(): void } }).keyboard?.unlock()
+    }
+    document.addEventListener('fullscreenchange', onChange)
+    return () => document.removeEventListener('fullscreenchange', onChange)
+  }, [])
+
   const font = 'var(--font-doom), monospace'
 
   return (
@@ -194,7 +213,7 @@ export function GameWindow({ open, onClose }: Props) {
             DOOM · E1M1 HANGAR
           </span>
           <span style={{ display: 'flex', gap: 6 }}>
-            <BezelButton label="Fullscreen" onClick={() => screen.current?.requestFullscreen().then(focusGame).catch(() => {})}>
+            <BezelButton label="Fullscreen" onClick={enterFullscreen}>
               <Maximize2 size={13} strokeWidth={2.25} />
             </BezelButton>
             <BezelButton label="Close (`)" onClick={onClose}>
@@ -252,7 +271,11 @@ export function GameWindow({ open, onClose }: Props) {
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', columnGap: 16, rowGap: 2, marginTop: 9, color: '#8a8a8a', fontSize: 11, lineHeight: 1.4 }}>
-          <span style={{ minWidth: 0 }}>Click to grab the mouse · WASD move · click fire · E use · 1-7 weapons · Esc menu · ` close</span>
+          <span style={{ minWidth: 0, color: menu ? '#e8e8e8' : undefined }}>
+            {menu
+              ? 'Menu: ↑↓ select · Enter confirm · Esc back · click the screen to play'
+              : 'Click to grab the mouse · WASD move · click fire · E use · 1-7 weapons · Esc menu · ` close'}
+          </span>
           <span style={{ whiteSpace: 'nowrap' }}>
             DOOM shareware © id Software · Engine:{' '}
             <a href="/doom/game/SOURCE.txt" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>

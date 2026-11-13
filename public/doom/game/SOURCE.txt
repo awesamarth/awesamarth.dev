@@ -18,6 +18,7 @@ Changes against that commit (full diff below):
     which makes the OPL music emulation work in the browser
   - src/doomtype.h: keep `boolean` int-sized when <stdbool.h> is already included (newer
     Emscripten headers include it, which mixed 1- and 4-byte booleans between files)
+  - src/doom/m_menu.c: export doom_menu_active() so the page can read whether the menu is open
 
 DOOM1.WAD is the unmodified DOOM shareware v1.9 data file by id Software
 (SHA-256 1d7d43be501e67d927e415e0b8f3e29c3bf33075e859721816f652a526cac771).
@@ -54,6 +55,24 @@ index a1aa1d9..e584473 100644
      result1 = OPL_Detect();
      result2 = OPL_Detect();
      if (result1 == OPL_INIT_NONE || result2 == OPL_INIT_NONE)
+diff --git a/src/doom/m_menu.c b/src/doom/m_menu.c
+index 0da4869..82b8104 100644
+--- a/src/doom/m_menu.c
++++ b/src/doom/m_menu.c
+@@ -2118,3 +2118,13 @@ void M_Init (void)
+     opldev = M_CheckParm("-opldev") > 0;
+ }
+ 
++
++#ifdef __EMSCRIPTEN__
++#include <emscripten.h>
++
++// Lets the embedding page read the real menu state (used to pause/resume and for hints).
++EMSCRIPTEN_KEEPALIVE int doom_menu_active(void)
++{
++    return menuactive;
++}
++#endif
 diff --git a/src/doomtype.h b/src/doomtype.h
 index 9947a07..9ac80c2 100644
 --- a/src/doomtype.h

@@ -9281,6 +9281,7 @@ var ___wasm_call_ctors = () => (___wasm_call_ctors = wasmExports['__wasm_call_ct
 var _main = Module['_main'] = (a0, a1) => (_main = Module['_main'] = wasmExports['__main_argc_argv'])(a0, a1);
 var _malloc = (a0) => (_malloc = wasmExports['malloc'])(a0);
 var _free = (a0) => (_free = wasmExports['free'])(a0);
+var _doom_menu_active = Module['_doom_menu_active'] = () => (_doom_menu_active = Module['_doom_menu_active'] = wasmExports['doom_menu_active'])();
 var _emscripten_builtin_memalign = (a0, a1) => (_emscripten_builtin_memalign = wasmExports['emscripten_builtin_memalign'])(a0, a1);
 var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0);
 var __emscripten_stack_alloc = (a0) => (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0);
