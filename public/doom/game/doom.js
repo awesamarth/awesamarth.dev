@@ -9282,6 +9282,12 @@ var _main = Module['_main'] = (a0, a1) => (_main = Module['_main'] = wasmExports
 var _malloc = (a0) => (_malloc = wasmExports['malloc'])(a0);
 var _free = (a0) => (_free = wasmExports['free'])(a0);
 var _doom_menu_active = Module['_doom_menu_active'] = () => (_doom_menu_active = Module['_doom_menu_active'] = wasmExports['doom_menu_active'])();
+var _doom_menu_x = Module['_doom_menu_x'] = () => (_doom_menu_x = Module['_doom_menu_x'] = wasmExports['doom_menu_x'])();
+var _doom_menu_y = Module['_doom_menu_y'] = () => (_doom_menu_y = Module['_doom_menu_y'] = wasmExports['doom_menu_y'])();
+var _doom_menu_count = Module['_doom_menu_count'] = () => (_doom_menu_count = Module['_doom_menu_count'] = wasmExports['doom_menu_count'])();
+var _doom_menu_item_on = Module['_doom_menu_item_on'] = () => (_doom_menu_item_on = Module['_doom_menu_item_on'] = wasmExports['doom_menu_item_on'])();
+var _doom_menu_mode = Module['_doom_menu_mode'] = () => (_doom_menu_mode = Module['_doom_menu_mode'] = wasmExports['doom_menu_mode'])();
+var _doom_menu_set_item = Module['_doom_menu_set_item'] = (a0) => (_doom_menu_set_item = Module['_doom_menu_set_item'] = wasmExports['doom_menu_set_item'])(a0);
 var _emscripten_builtin_memalign = (a0, a1) => (_emscripten_builtin_memalign = wasmExports['emscripten_builtin_memalign'])(a0, a1);
 var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0);
 var __emscripten_stack_alloc = (a0) => (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0);

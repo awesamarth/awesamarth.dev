@@ -114,17 +114,59 @@
       const watchMenu = () => {
         if (ready) {
           const open = menuActive()
-          if (open !== lastMenu) post('menu', { open: (lastMenu = open) })
+          if (open !== lastMenu) {
+            post('menu', { open: (lastMenu = open) })
+            canvas.style.cursor = open ? 'default' : 'none'
+          }
         }
         requestAnimationFrame(watchMenu)
       }
       requestAnimationFrame(watchMenu)
 
-      // First click captures the mouse; SDL asks for pointer lock once the game grabs it.
-      canvas.addEventListener('mousedown', () => {
-        canvas.focus()
-        if (!document.pointerLockElement) canvas.requestPointerLock?.()
-      })
+      // Point-and-click menus. DOOM's menus are 320x200 and items are 16px apart, so map the
+      // cursor onto the current menu and let the engine move the skull there (m_menu.c exports).
+      function menuItemAt(e) {
+        if (!Module._doom_menu_count || Module._doom_menu_mode()) return -1
+        const r = canvas.getBoundingClientRect()
+        const x = ((e.clientX - r.left) / r.width) * 320
+        const y = ((e.clientY - r.top) / r.height) * 200
+        const mx = Module._doom_menu_x()
+        const my = Module._doom_menu_y()
+        if (x < mx - 34 || x > mx + 240) return -1
+        const i = Math.floor((y - my + 3) / 16)
+        return i >= 0 && i < Module._doom_menu_count() ? i : -1
+      }
+      window.addEventListener(
+        'mousemove',
+        e => {
+          if (!ready || !menuActive()) return
+          const i = menuItemAt(e)
+          canvas.style.cursor = i >= 0 && Module._doom_menu_set_item(i) ? 'pointer' : 'default'
+        },
+        true,
+      )
+      // Capture phase, so in the menu the engine never sees the click as a mouse button.
+      window.addEventListener(
+        'mousedown',
+        e => {
+          canvas.focus()
+          if (e.button !== 0) return
+          if (ready && menuActive()) {
+            e.preventDefault()
+            e.stopImmediatePropagation()
+            const mode = Module._doom_menu_mode()
+            if (mode === 1) press('Enter', 'Enter', 13) // help screens: any key continues
+            else if (mode === 0) {
+              const i = menuItemAt(e)
+              if (i >= 0 && Module._doom_menu_set_item(i)) press('Enter', 'Enter', 13)
+            }
+            return
+          }
+          // In game, the first click captures the mouse.
+          if (!document.pointerLockElement) canvas.requestPointerLock?.()
+        },
+        true,
+      )
 
       var Module = {
         canvas,

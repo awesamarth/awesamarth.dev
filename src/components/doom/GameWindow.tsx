@@ -273,7 +273,7 @@ export function GameWindow({ open, onClose }: Props) {
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', columnGap: 16, rowGap: 2, marginTop: 9, color: '#8a8a8a', fontSize: 11, lineHeight: 1.4 }}>
           <span style={{ minWidth: 0, color: menu ? '#e8e8e8' : undefined }}>
             {menu
-              ? 'Menu: ↑↓ select · Enter confirm · Esc back · click the screen to play'
+              ? 'Menu: point and click (or ↑↓ + Enter) · Esc back · Y/N for prompts'
               : 'Click to grab the mouse · WASD move · click fire · E use · 1-7 weapons · Esc menu · ` close'}
           </span>
           <span style={{ whiteSpace: 'nowrap' }}>
