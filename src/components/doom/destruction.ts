@@ -1,16 +1,20 @@
 // Page destruction for the idkfa easter egg.
 //
 // Holes: every [data-doom-root] element gets a "hole layer" on top of its content, clipped with
-// clip-path: path(...) to the union of its holes and showing the DOOM backdrop. clip-path updates
-// synchronously (CSS masks reload an image and flash), and since the layer lives inside the root,
-// holes move with it when the page scrolls. A low-res canvas mirrors the holes for hit-testing.
-// Scorch marks live on a decal canvas just below the hole layer. Letters inside a hole are found with
+// clip-path: path(...) to its holes and showing the DOOM backdrop. clip-path updates synchronously
+// (CSS masks reload an image and flash), and since the layer lives inside the root, holes move with
+// it when the page scrolls. Damage lives on a grid of CELL px "pixels" (like the HUD's pixel art):
+// holes are whole cells with crumbly edges, each hole gets a dithered inner shadow cast by its top-left
+// edge (so the page reads as a thick wall, not paper), and scorch is a few stepped, noisy bands of
+// soot (with a faint ash ring on dark surfaces). Both are drawn at one canvas pixel per cell and scaled up
+// pixelated. The grid doubles as the hit-test for destroyed links. Letters inside a hole are found with
 // the caret APIs, so the page's DOM (and React) is never modified; copies of them fall with simple
 // physics on an overlay canvas and pile up on top of the status bar, together with debris and sparks.
 
 import { image, type Manifest } from './sprites'
 
-const MASK_SCALE = 0.5
+const CELL = 3 // CSS px per destruction pixel
+const LEVELS = [0.22, 0.45, 0.7, 0.9] // scorch bands
 const GRAVITY = 2200
 const MAX_PARTICLES = 1400
 const MAX_RESTING = 900
@@ -18,21 +22,29 @@ const PILE_BUCKET = 6
 const PILE_MAX = 220
 
 type Pt = [number, number]
+type Box = [number, number, number, number]
+type Tint = 0 | 1 | 2 // soot (light surfaces), soot + a faint ash ring (dark surfaces), BFG burn
+type Scorch = { x: number; y: number; r0: number; r1: number; strength: number; tint: Tint }
 type Root = {
   el: HTMLElement
-  mask: HTMLCanvasElement
-  mctx: CanvasRenderingContext2D
-  decal: HTMLCanvasElement
+  decal: HTMLCanvasElement // scorch, over the content
   dctx: CanvasRenderingContext2D
+  shade: HTMLCanvasElement // inner shadows, inside the hole layer
+  sctx: CanvasRenderingContext2D
   layer: HTMLDivElement
   w: number
   h: number
+  gw: number
+  gh: number
+  solid: Uint8Array // 1 = page, 0 = hole
+  burn: Uint8Array // scorch band 0-4 per cell
+  tint: Uint8Array
   holes: Pt[][] // in root CSS px, replayed on resize
-  path: string[] // SVG subpath per hole
-  decals: Decal[]
-  dirty: boolean
+  scorches: Scorch[]
+  rows: string[] // clip-path subpaths per grid row
+  rowsDirty: [number, number] | null
+  paintDirty: Box[] // cell boxes to repaint (kept separate: BFG rays damage far-apart spots)
 }
-type Decal = { kind: 'scorch' | 'rim' | 'burn'; x: number; y: number; r: number; pts?: Pt[] }
 
 type Particle = {
   kind: 'letter' | 'chunk' | 'spark'
@@ -125,16 +137,22 @@ export class Destruction {
   ray(x0: number, y0: number, x1: number, y1: number, width: number) {
     const len = Math.hypot(x1 - x0, y1 - y0)
     const steps = Math.max(1, Math.round(len / (width * 0.6)))
+    const shots: [number, number, number, Pt[]][] = []
     for (let i = 1; i <= steps; i++) {
       const t = i / steps
       const x = x0 + (x1 - x0) * t
       const y = y0 + (y1 - y0) * t
       const r = width * (0.45 + Math.random() * 0.35) * (1 - t * 0.4)
-      const poly = jagged(x, y, r, 8)
-      this.letters(x, y, r, 900, poly, Math.atan2(y1 - y0, x1 - x0))
-      this.cut(poly, x, y, r, 'bfg', true)
-      if (i % 3 === 0) this.debris(x, y, r, 700, 'bfg', 3)
+      shots.push([x, y, r, jagged(x, y, r, 8)])
     }
+    // Letters first for the whole trench (one hit-testing pass), then holes and debris.
+    this.withoutLayers(() => {
+      for (const [x, y, r, poly] of shots) this.findLetters(x, y, r, 900, poly, Math.atan2(y1 - y0, x1 - x0))
+    })
+    shots.forEach(([x, y, r, poly], i) => {
+      this.cut(poly, x, y, r, 'bfg', true)
+      if ((i + 1) % 3 === 0) this.debris(x, y, r, 700, 'bfg', 3)
+    })
     this.anim(['BFE2A0', 'BFE2B0', 'BFE2C0', 'BFE2D0'], [8, 8, 8, 8], x1, y1, 1)
   }
 
@@ -154,8 +172,9 @@ export class Destruction {
       const b = r.el.getBoundingClientRect()
       if (x < b.left || x >= b.right || y < b.top || y >= b.bottom) continue
       covered = true
-      const a = r.mctx.getImageData(Math.floor((x - b.left) * MASK_SCALE), Math.floor((y - b.top) * MASK_SCALE), 1, 1).data[3]
-      if (a > 0) return false
+      const gx = Math.floor((x - b.left) / CELL)
+      const gy = Math.floor((y - b.top) / CELL)
+      if (gx < 0 || gy < 0 || gx >= r.gw || gy >= r.gh || r.solid[gy * r.gw + gx]) return false
     }
     return covered
   }
@@ -165,18 +184,39 @@ export class Destruction {
   private root(el: HTMLElement): Root {
     let r = this.roots.get(el)
     if (r) return r
-    const mask = document.createElement('canvas')
-    const mctx = mask.getContext('2d', { willReadFrequently: true })!
+    const canvasStyle = { position: 'absolute', left: '0', top: '0', pointerEvents: 'none', imageRendering: 'pixelated' }
     const decal = document.createElement('canvas')
     decal.setAttribute('aria-hidden', 'true')
-    Object.assign(decal.style, { position: 'absolute', left: '0', top: '0', width: '100%', height: '100%', pointerEvents: 'none', zIndex: '5' })
+    Object.assign(decal.style, canvasStyle, { zIndex: '5' })
+    const shade = document.createElement('canvas')
+    Object.assign(shade.style, canvasStyle, { zIndex: '1' })
     const layer = document.createElement('div')
     layer.setAttribute('aria-hidden', 'true')
     layer.dataset.doomHoles = ''
     Object.assign(layer.style, { position: 'absolute', inset: '0', pointerEvents: 'none', zIndex: '6', clipPath: 'path("M0 0")', overflow: 'hidden' })
+    layer.append(shade)
     if (getComputedStyle(el).position === 'static') el.style.position = 'relative'
     el.append(decal, layer)
-    r = { el, mask, mctx, decal, dctx: decal.getContext('2d')!, layer, w: 0, h: 0, holes: [], path: [], decals: [], dirty: false }
+    r = {
+      el,
+      decal,
+      dctx: decal.getContext('2d')!,
+      shade,
+      sctx: shade.getContext('2d')!,
+      layer,
+      w: 0,
+      h: 0,
+      gw: 0,
+      gh: 0,
+      solid: new Uint8Array(0),
+      burn: new Uint8Array(0),
+      tint: new Uint8Array(0),
+      holes: [],
+      scorches: [],
+      rows: [],
+      rowsDirty: null,
+      paintDirty: [],
+    }
     this.roots.set(el, r)
     this.onLayer(layer)
     this.sizeRoot(r)
@@ -184,18 +224,27 @@ export class Destruction {
     return r
   }
 
+  // (Re)build the grid for the root's size and replay its damage.
   private sizeRoot(r: Root) {
     r.w = Math.max(1, r.el.offsetWidth)
     r.h = Math.max(1, r.el.offsetHeight)
-    r.mask.width = Math.ceil(r.w * MASK_SCALE)
-    r.mask.height = Math.ceil(r.h * MASK_SCALE)
-    r.decal.width = r.w
-    r.decal.height = r.h
-    r.mctx.fillStyle = '#fff'
-    r.mctx.fillRect(0, 0, r.mask.width, r.mask.height)
-    r.mctx.globalCompositeOperation = 'destination-out'
-    for (const h of r.holes) this.fillPoly(r.mctx, h, MASK_SCALE)
-    for (const d of r.decals) this.drawDecal(r, d)
+    r.gw = Math.ceil(r.w / CELL)
+    r.gh = Math.ceil(r.h / CELL)
+    const n = r.gw * r.gh
+    r.solid = new Uint8Array(n).fill(1)
+    r.burn = new Uint8Array(n)
+    r.tint = new Uint8Array(n)
+    r.rows = new Array(r.gh).fill('')
+    for (const c of [r.decal, r.shade]) {
+      c.width = r.gw
+      c.height = r.gh
+      c.style.width = `${r.gw * CELL}px`
+      c.style.height = `${r.gh * CELL}px`
+    }
+    for (const h of r.holes) this.carve(r, h)
+    for (const sc of r.scorches) this.scorch(r, sc)
+    r.rowsDirty = [0, r.gh - 1]
+    r.paintDirty = [[0, 0, r.gw - 1, r.gh - 1]]
   }
 
   private resizeRoot(el: HTMLElement) {
@@ -205,27 +254,25 @@ export class Destruction {
   }
 
   private cut(poly: Pt[], x: number, y: number, radius: number, kind: ImpactKind, quiet = false) {
+    let tint: Tint = 2
+    if (kind !== 'bfg') tint = luminance(surfaceColor(x, y)) < 0.3 ? 1 : 0
     for (const el of document.querySelectorAll<HTMLElement>('[data-doom-root]')) {
       const b = el.getBoundingClientRect()
       if (x + radius < b.left || x - radius > b.right || y + radius < b.top || y - radius > b.bottom) continue
       const r = this.root(el)
       const local = poly.map(([px, py]) => [px - b.left, py - b.top] as Pt)
       r.holes.push(local)
-      r.path.push(`M${local.map(([px, py]) => `${px.toFixed(1)} ${py.toFixed(1)}`).join('L')}Z`)
-      r.dirty = true
-      this.fillPoly(r.mctx, local, MASK_SCALE)
+      this.carve(r, local)
       const lx = x - b.left
       const ly = y - b.top
-      const decals: Decal[] =
+      const sc: Scorch =
         kind === 'bfg'
-          ? [{ kind: 'burn', x: lx, y: ly, r: radius * (quiet ? 1.6 : 1.4) }]
+          ? { x: lx, y: ly, r0: radius * 0.7, r1: radius * (quiet ? 1.55 : 1.4), strength: 0.95, tint }
           : kind === 'rocket'
-            ? [{ kind: 'scorch', x: lx, y: ly, r: radius * 1.9 }, { kind: 'rim', x: lx, y: ly, r: radius, pts: local }]
-            : [{ kind: 'scorch', x: lx, y: ly, r: radius * 2.4 }, { kind: 'rim', x: lx, y: ly, r: radius, pts: local }]
-      for (const d of decals) {
-        r.decals.push(d)
-        this.drawDecal(r, d)
-      }
+            ? { x: lx, y: ly, r0: radius * 0.8, r1: radius * 1.45, strength: 1, tint }
+            : { x: lx, y: ly, r0: radius * 0.7, r1: radius + 9, strength: 0.8, tint }
+      r.scorches.push(sc)
+      this.scorch(r, sc)
     }
     // Shake only the card that was hit; moving a page-sized root would change the scroll size.
     if (!quiet) {
@@ -235,52 +282,163 @@ export class Destruction {
     }
   }
 
-  // Apply new holes once per frame (the BFG spray adds hundreds in a burst).
+  // Remove the cells inside a hole polygon. Each cell's test point is jittered (deterministically,
+  // so resizes replay the same shape), which crumbles the edge into pixels instead of a clean cut.
+  private carve(r: Root, poly: Pt[]) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+    for (const [px, py] of poly) {
+      minX = Math.min(minX, px)
+      minY = Math.min(minY, py)
+      maxX = Math.max(maxX, px)
+      maxY = Math.max(maxY, py)
+    }
+    const x0 = Math.max(0, Math.floor(minX / CELL) - 1)
+    const y0 = Math.max(0, Math.floor(minY / CELL) - 1)
+    const x1 = Math.min(r.gw - 1, Math.ceil(maxX / CELL) + 1)
+    const y1 = Math.min(r.gh - 1, Math.ceil(maxY / CELL) + 1)
+    if (x0 > x1 || y0 > y1) return
+    for (let gy = y0; gy <= y1; gy++) {
+      for (let gx = x0; gx <= x1; gx++) {
+        const i = gy * r.gw + gx
+        if (!r.solid[i]) continue
+        const jx = (hash(gx, gy) - 0.5) * CELL * 1.8
+        const jy = (hash(gy * 7 + 3, gx) - 0.5) * CELL * 1.8
+        if (inside(poly, (gx + 0.5) * CELL + jx, (gy + 0.5) * CELL + jy)) r.solid[i] = 0
+      }
+    }
+    this.markRows(r, y0, y1)
+    this.markPaint(r, x0, y0, x1 + 4, y1 + 4) // shadows reach 4 cells down-right
+  }
+
+  // Stepped, noisy scorch bands around a hole. A cell keeps its darkest band.
+  private scorch(r: Root, sc: Scorch) {
+    const cx = sc.x / CELL
+    const cy = sc.y / CELL
+    const r0 = sc.r0 / CELL
+    const r1 = Math.max(r0 + 1, sc.r1 / CELL)
+    const x0 = Math.max(0, Math.floor(cx - r1))
+    const y0 = Math.max(0, Math.floor(cy - r1))
+    const x1 = Math.min(r.gw - 1, Math.ceil(cx + r1))
+    const y1 = Math.min(r.gh - 1, Math.ceil(cy + r1))
+    for (let gy = y0; gy <= y1; gy++) {
+      for (let gx = x0; gx <= x1; gx++) {
+        const i = gy * r.gw + gx
+        if (!r.solid[i]) continue
+        const d = Math.hypot(gx + 0.5 - cx, gy + 0.5 - cy)
+        if (d > r1) continue
+        const j = Math.max(0, (d - r0) / (r1 - r0))
+        const q = sc.strength * Math.pow(1 - j, 1.4) + (hash(gx * 3 + 1, gy * 5 + 2) - 0.5) * 0.3
+        let level = 0
+        for (let k = LEVELS.length - 1; k >= 0; k--) {
+          if (q >= LEVELS[k]) {
+            level = k + 1
+            break
+          }
+        }
+        if (sc.tint === 1 && level < 2) continue // the faintest band is just noise on dark surfaces
+        if (level > r.burn[i]) {
+          r.burn[i] = level
+          r.tint[i] = sc.tint
+        }
+      }
+    }
+    this.markPaint(r, x0, y0, x1, y1)
+  }
+
+  private markRows(r: Root, y0: number, y1: number) {
+    r.rowsDirty = r.rowsDirty ? [Math.min(r.rowsDirty[0], y0), Math.max(r.rowsDirty[1], y1)] : [y0, y1]
+  }
+
+  private markPaint(r: Root, x0: number, y0: number, x1: number, y1: number) {
+    r.paintDirty.push([x0, y0, x1, y1])
+  }
+
+  // Apply new damage once per frame (the BFG spray adds hundreds of holes in a burst).
   private applyHoles() {
     for (const r of this.roots.values()) {
-      if (!r.dirty) continue
-      r.dirty = false
-      r.layer.style.clipPath = `path(nonzero, "${r.path.join('')}")`
+      if (r.rowsDirty) {
+        const [y0, y1] = r.rowsDirty
+        r.rowsDirty = null
+        for (let gy = y0; gy <= y1; gy++) {
+          let row = ''
+          const base = gy * r.gw
+          for (let gx = 0; gx < r.gw; gx++) {
+            if (r.solid[base + gx]) continue
+            let end = gx
+            while (end + 1 < r.gw && !r.solid[base + end + 1]) end++
+            row += `M${gx * CELL} ${gy * CELL}h${(end - gx + 1) * CELL}v${CELL}h${-(end - gx + 1) * CELL}z`
+            gx = end
+          }
+          r.rows[gy] = row
+        }
+        const path = r.rows.join('')
+        r.layer.style.clipPath = path ? `path(nonzero, "${path}")` : 'path("M0 0")'
+      }
+      if (r.paintDirty.length) {
+        const boxes = r.paintDirty
+        r.paintDirty = []
+        for (const box of boxes) this.paint(r, box)
+      }
     }
   }
 
-  private fillPoly(ctx: CanvasRenderingContext2D, pts: Pt[], k: number) {
-    ctx.beginPath()
-    pts.forEach(([x, y], i) => (i ? ctx.lineTo(x * k, y * k) : ctx.moveTo(x * k, y * k)))
-    ctx.closePath()
-    ctx.fill()
-  }
-
-  private drawDecal(r: Root, d: Decal) {
-    const c = r.dctx
-    if (d.kind === 'rim' && d.pts) {
-      c.save()
-      c.strokeStyle = 'rgba(20,10,5,0.85)'
-      c.lineWidth = 4
-      c.beginPath()
-      d.pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y)))
-      c.closePath()
-      c.stroke()
-      c.restore()
-      return
+  // Scorch (decal canvas) and inner shadows (shade canvas) for a box of cells, one pixel per cell.
+  private paint(r: Root, [bx0, by0, bx1, by1]: Box) {
+    const x0 = Math.max(0, bx0)
+    const y0 = Math.max(0, by0)
+    const x1 = Math.min(r.gw - 1, bx1)
+    const y1 = Math.min(r.gh - 1, by1)
+    if (x0 > x1 || y0 > y1) return
+    const w = x1 - x0 + 1
+    const h = y1 - y0 + 1
+    const dec = r.dctx.createImageData(w, h)
+    const sh = r.sctx.createImageData(w, h)
+    const isHole = (gx: number, gy: number) => gx < 0 || gy < 0 || gx >= r.gw || gy >= r.gh || !r.solid[gy * r.gw + gx]
+    for (let gy = y0; gy <= y1; gy++) {
+      for (let gx = x0; gx <= x1; gx++) {
+        const i = gy * r.gw + gx
+        const o = ((gy - y0) * w + (gx - x0)) * 4
+        if (r.solid[i]) {
+          const lv = r.burn[i]
+          if (!lv) continue
+          const a = LEVELS[lv - 1]
+          const [cr, cg, cb, ca] =
+            r.tint[i] === 1 ? (lv >= 3 ? [10, 6, 4, a * 0.9] : [150, 140, 132, 0.28]) : r.tint[i] === 2 ? (lv >= 3 ? [12, 40, 6, a] : [70, 255, 70, a * 0.4]) : [28, 14, 9, a]
+          dec.data[o] = cr
+          dec.data[o + 1] = cg
+          dec.data[o + 2] = cb
+          dec.data[o + 3] = ca * 255
+        } else if (!isHole(gx - 1, gy - 2)) {
+          // The top-left lip casts a shadow into the hole: solid, then a dithered half-shadow.
+          sh.data.set([8, 4, 18, 150], o)
+        } else if (!isHole(gx - 2, gy - 4) && hash(gx, gy) < 0.5) {
+          sh.data.set([8, 4, 18, 90], o)
+        }
+      }
     }
-    const g = c.createRadialGradient(d.x, d.y, d.r * 0.2, d.x, d.y, d.r)
-    if (d.kind === 'burn') {
-      g.addColorStop(0, 'rgba(10,40,0,0.85)')
-      g.addColorStop(0.55, 'rgba(40,255,40,0.22)')
-      g.addColorStop(1, 'rgba(0,0,0,0)')
-    } else {
-      g.addColorStop(0, 'rgba(0,0,0,0.7)')
-      g.addColorStop(0.45, 'rgba(25,12,4,0.45)')
-      g.addColorStop(1, 'rgba(0,0,0,0)')
-    }
-    c.fillStyle = g
-    c.fillRect(d.x - d.r, d.y - d.r, d.r * 2, d.r * 2)
+    r.dctx.putImageData(dec, x0, y0)
+    r.sctx.putImageData(sh, x0, y0)
   }
 
   // ---------- letters, debris, sparks ----------
 
   private letters(cx: number, cy: number, radius: number, force: number, poly: Pt[], dir?: number) {
+    this.withoutLayers(() => this.findLetters(cx, cy, radius, force, poly, dir))
+  }
+
+  // Hit-testing through the hole layers' clip-paths is ~4x slower (the BFG does thousands of tests),
+  // so take them out while looking for letters. It's synchronous, so nothing renders in between.
+  private withoutLayers(fn: () => void) {
+    const layers = [...this.roots.values()].map(r => r.layer)
+    for (const l of layers) l.style.display = 'none'
+    try {
+      fn()
+    } finally {
+      for (const l of layers) l.style.display = ''
+    }
+  }
+
+  private findLetters(cx: number, cy: number, radius: number, force: number, poly: Pt[], dir?: number) {
     const step = Math.max(4, Math.min(11, radius / 3))
     const seen = new Map<Text, Set<number>>()
     let spawned = 0
@@ -340,25 +498,49 @@ export class Destruction {
   }
 
   private debris(x: number, y: number, radius: number, force: number, kind: ImpactKind, scaleCount = 1) {
-    const base = surfaceColor(x, y)
+    const base = rgb(surfaceColor(x, y))
     const big = kind === 'rocket' || kind === 'bfg'
-    const chunks = Math.round((big ? 26 : 5) * scaleCount)
+    // Chunks of the wall: whole cells in shades of the surface that was hit, axis-aligned like pixel art.
+    const chunks = Math.round((big ? 30 : 7) * scaleCount)
     for (let i = 0; i < chunks; i++) {
       const a = Math.random() * Math.PI * 2
       const v = force * (0.3 + Math.random() * 0.8)
-      const size = big ? 3 + Math.random() * 9 : 2 + Math.random() * 4
+      const cells = big ? 1 + Math.floor(Math.random() * 3) : 1 + Math.floor(Math.random() * 1.6)
+      const k = Math.random() < 0.15 ? 0.35 : 0.7 + Math.random() * 0.6
       this.add({
         kind: 'chunk',
         x: x + Math.cos(a) * radius * 0.5,
         y: y + Math.sin(a) * radius * 0.5,
         vx: Math.cos(a) * v,
         vy: Math.sin(a) * v - 250,
-        rot: Math.random() * 6,
-        vr: (Math.random() - 0.5) * 20,
-        w: size,
-        h: size * (0.5 + Math.random()),
-        color: Math.random() < 0.7 ? base : Math.random() < 0.5 ? '#2a2a2a' : '#5a3a20',
+        rot: 0,
+        vr: 0,
+        w: cells * CELL,
+        h: Math.max(1, cells - (Math.random() < 0.4 ? 1 : 0)) * CELL,
+        color: `rgb(${base.map(c => Math.min(255, Math.round(c * k + (k > 1 ? 18 : 0)))).join(',')})`,
         life: Infinity,
+        resting: false,
+        born: performance.now(),
+      })
+    }
+    // Dust: pale cells that drift and fade.
+    const dust = Math.round((big ? 26 : 7) * scaleCount)
+    for (let i = 0; i < dust; i++) {
+      const a = Math.random() * Math.PI * 2
+      const v = (big ? 260 : 90) * (0.3 + Math.random())
+      const g = 150 + Math.round(Math.random() * 60)
+      this.add({
+        kind: 'spark',
+        x: x + (Math.random() - 0.5) * radius,
+        y: y + (Math.random() - 0.5) * radius,
+        vx: Math.cos(a) * v,
+        vy: Math.sin(a) * v - 60,
+        rot: 0,
+        vr: 0,
+        w: CELL,
+        h: CELL,
+        color: `rgba(${g},${g - 8},${g - 14},0.55)`,
+        life: 0.35 + Math.random() * (big ? 1 : 0.5),
         resting: false,
         born: performance.now(),
       })
@@ -451,7 +633,7 @@ export class Destruction {
         if (p.vy < 260) {
           p.y = ground - p.h / 2
           p.resting = true
-          p.rot = Math.round(p.rot / (Math.PI / 2)) * (Math.PI / 2) + (Math.random() - 0.5) * 0.5
+          p.rot = p.kind === 'chunk' ? 0 : Math.round(p.rot / (Math.PI / 2)) * (Math.PI / 2) + (Math.random() - 0.5) * 0.5
           // Spread the pile a little so it builds into mounds rather than spikes.
           const add = Math.min(p.h, p.w) * 0.7
           for (let k = -1; k <= 1; k++) {
@@ -497,12 +679,12 @@ export class Destruction {
       if (p.kind === 'spark') {
         c.fillStyle = p.color
         c.globalAlpha = Math.min(1, p.life * 4)
-        c.fillRect(p.x, p.y, 2.5, 2.5)
+        c.fillRect(p.x, p.y, p.w + 0.5, p.h + 0.5)
         c.globalAlpha = 1
         continue
       }
       c.save()
-      c.translate(p.x, p.y)
+      c.translate(p.kind === 'chunk' ? Math.round(p.x) : p.x, p.kind === 'chunk' ? Math.round(p.y) : p.y)
       c.rotate(p.rot)
       if (p.kind === 'letter') {
         c.font = p.font!
@@ -589,4 +771,21 @@ function surfaceColor(x: number, y: number) {
     el = el.parentElement
   }
   return getComputedStyle(document.body).backgroundColor || '#300'
+}
+
+function rgb(color: string): [number, number, number] {
+  const m = color.match(/[\d.]+/g)
+  return m && m.length >= 3 ? [+m[0], +m[1], +m[2]] : [48, 0, 0]
+}
+
+function luminance(color: string) {
+  const [r, g, b] = rgb(color)
+  return (r * 0.3 + g * 0.59 + b * 0.11) / 255
+}
+
+// Deterministic per-cell noise in [0, 1).
+function hash(x: number, y: number) {
+  let h = Math.imul(x | 0, 374761393) ^ Math.imul(y | 0, 668265263)
+  h = Math.imul(h ^ (h >>> 13), 1274126177)
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296
 }
