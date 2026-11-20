@@ -27,7 +27,11 @@ export default function ThankYou() {
     }, [tokenId, txHash]);
 
     if (!tokenId || !txHash) {
-        return null;
+        return (
+            <main className="min-h-screen flex items-center justify-center">
+                <h1 className="text-2xl font-bold">Thank you for visiting</h1>
+            </main>
+        );
     }
 
     function getNftExplorerUrl() {
